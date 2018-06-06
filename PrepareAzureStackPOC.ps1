@@ -66,13 +66,13 @@ $DVM_PASSWORD = 'AzureStack'
 $ShareRoot = "\\172.16.5.9\AzureStack"
 $sourceVHD="\DeployAzureStack\MASImage"
 $ADSKPassword="MySuperStrongPasswordAT@123"
-$version="201806063"
+$version="201806062"
 
 try
 {
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $winPEStartTime = (Get-Date).ToString('yyyy/MM/dd HH:mm:ss')
-$ScriptVersion=(Get-Item x:\PrepareAzureStackPOC.ps1).LastWriteTime
+
 Import-Module "$PSScriptRoot\PrepareAzureStackPOC.psm1" -Force
 cls
 Write-Host "      *****************************************" -foregroundColor Yellow
@@ -81,23 +81,8 @@ Write-Host "      *****************************************" -foregroundColor Ye
 write-host ""
 
 $ActiveLog = ActivateLog
-Write-LogMessage -Message "Validating if a newer version of this script is available"
-
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    $Connection = test-connection -computername raw.githubusercontent.com -count 1 -quiet
-    If (!$Connection) {
-        Write-LogMessage -Message "No Internet connection available. Using local script"
-    return $false
-    }elseIf ($Connection) {
-        Write-LogMessage -Message "Validating "
-        $Uri = 'https://raw.githubusercontent.com/Azure/AzureStack-Tools/master/Deployment/asdk-installer.ps1'
-        $OutFile  = ($LocalPath + '\' + 'asdk-installer.ps1')
-        #Invoke-WebRequest $uri -OutFile ($LocalPath + '\' + 'asdk-installer.ps1')
-        DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-    }
-
 Write-LogMessage -Message "Preparing Azure Stack POC Deployment at $winPEStartTime"
-Write-LogMessage -Message "Script version: $ScriptVersion"
+Write-LogMessage -Message "Script version: $version"
 Write-LogMessage -Message "Initialize WinPE"
 Write-LogMessage -Message "Configure boot and storage Disks."
 Write-LogMessage -Message "Finding Boot USB Drive"
@@ -200,11 +185,15 @@ If (!$DownloadResult) {
 }
 
 If ($networkSource -eq $false){
-$AStackVHD = ($SourceDrive + "\CloudBuilder.vhdx") 
+    $AStackVHD = ($SourceDrive + "\CloudBuilder.vhdx") 
+    $ChangeNetworkGA=($SourceDrive + "\changeNetworkGA.ps1")
+    $CustomDeployment=($SourceDrive + "\customization.xml")
 }
 
 If ($networkSource) {
     $AStackVHD = $sourceVHDLocation + "\CloudBuilder.vhdx"
+    $ChangeNetworkGA=($sourceVHDLocation + "\changeNetworkGA.ps1")
+    $CustomDeployment=($sourceVHDLocation + "\customization.xml")
 }
 If ($downloadSource) {
         GetStackRemotely -SystemDrive $TargetDrive         
@@ -221,6 +210,22 @@ If ($downloadSource) {
     }else{
         Write-LogMessage -Message "Copying $AStackVHD to '$TargetDrive'"
         copy-file -from $AStackVHD -to $Target -force
+
+        Write-LogMessage -Message "Copying support files"
+        $TargetForChangeNetwork=($TargetDrive + "\sources\changeNetworkGA.ps1")
+        $TargetForCustomDeployment = ($TargetDrive + "\sources\customization.xml")
+        If (test-path $changeNetworkGA) {
+            If (!(test-path ($TargetDrive + "\sources"))) {
+                 New-Item ($TargetDrive + "\sources") -Type directory | Out-Null
+            }
+            copy-file -from $ChangeNetworkGA -to $TargetForChangeNetwork -force
+        }
+        If (test-path $CustomDeployment) {
+                If (!(test-path ($TargetDrive + "\sources"))) {
+                New-Item ($TargetDrive + "\sources") -Type directory | Out-Null
+            }
+            copy-file -from $CustomDeployment -to $TargetForCustomDeployment -force
+        }
     }
 }
 
@@ -250,7 +255,7 @@ Write-LogMessage -Message "Rebooting to full OS."
 "Rebooting to full OS." 
 (Get-Date).ToString('yyyy/MM/dd HH:mm:ss') 
 Write-host "reboot halted, please type: wpeutil reboot"
-#wpeutil reboot
+wpeutil reboot
 }
 catch
 {
