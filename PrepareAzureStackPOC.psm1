@@ -332,13 +332,8 @@ function DownloadScripts {
         $OutFile  = ($SourcesRoot + '\' + 'ConfigASDK.ps1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
-        Write-LogMessage -Message "Downloading CustomNetworkScript"
-        $Uri = 'https://azurestackpoc.blob.core.windows.net/deployment/UpdateNetworkGA.ps1'
-        $OutFile  = ($SourcesRoot + '\' + 'UpdateNetworkGA.ps1')
-        DownloadWithRetry -url $uri -downloadLocation $OutFile -retries 3
-
         Write-LogMessage -Message "Downloading CustomInstaller"
-        $Uri = 'https://azurestackpoc.blob.core.windows.net/deployment/PrepareInstallation.ps1'
+        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareInstallation.ps1'
         $OutFile  = ($SourcesRoot + '\' + 'PrepareInstallation.ps1')
         DownloadWithRetry -url $uri -downloadLocation $OutFile -retries 3
 
@@ -781,7 +776,7 @@ Function CreateUnattend {
     $UnattendXML+= '          <Order>3</Order>'
     $UnattendXML+= '        </SynchronousCommand>'
     $UnattendXML+= '        <SynchronousCommand wcm:action="add">'
-    $UnattendXML+= '          <CommandLine>%windir%\System32\WindowsPowerShell\v1.0\powershell.exe -c "D:\sources\PrepareInstallation.ps1"</CommandLine>'
+    $UnattendXML+= '          <CommandLine>%windir%\System32\WindowsPowerShell\v1.0\powershell.exe -c "D:\sources\PrepareInstallation.ps1" -Password ' + $Password + '</CommandLine>'
     $UnattendXML+= '          <Description>Preparing the ASDK installation sources.</Description>'
     $UnattendXML+= '          <Order>4</Order>'
     $UnattendXML+= '        </SynchronousCommand>'
