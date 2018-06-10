@@ -60,11 +60,11 @@ If (test-path 'D:\sources\customization.xml') {
         }
     
     [xml]$CustomXML=Get-Content 'D:\sources\customization.xml'
-    If (($CustomXML.custom.ExternalNetwork) -and (test-path 'D:\sources\UpdateNetworkGA.ps1')){
+    If (($CustomXML.custom.ExternalNetwork) -and (test-path 'D:\Sources\ChangeNetworkGA.ps1')){
         $CustomExtNetwork=$CustomXML.custom.ExternalNetwork.value
         Write-LogMessage -message "Custom External Network $CustomExtNetwork"
         cd d:\sources
-        .\UpdateNetworkGA.ps1 -ExternalNetwork $CustomXML.custom.ExternalNetwork.value
+        .\ChangeNetworkGA.ps1 -ExternalNetwork $CustomXML.custom.ExternalNetwork.value
     }
 
     If ($CustomXML.custom.RegionName){
