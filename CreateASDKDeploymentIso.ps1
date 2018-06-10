@@ -1,6 +1,6 @@
     <#
     .SYNOPSIS
-        Creating a WinPE ISO image
+        Creating a WinPE ISO image to be used for the automated deployment of ASDK
 
     .DESCRIPTION
         Creates an ISO image to be used for deploying ASDK
@@ -164,8 +164,64 @@ Write-LogMessage -Message "Validating if a newer version is available..."
         exit
     }
 
+
+#Validating if Windows ADK is installed
+If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat")) {
+    Write-LogMessage -Message "Windows Assessment and Deployment Kit (Windows ADK) was not found"
+        #https://go.microsoft.com/fwlink/?linkid=873065
+        $Uri = 'https://go.microsoft.com/fwlink/?linkid=873065'
+        $OutFile  = ($env:TEMP + '\' + 'adksetup.exe')
+        DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
+        
+    #If download was successfull: install ADK features we need
+    Write-LogMessage "Installing Windows ADK features - this will take a while (. = 10 seconds)"
+    Write-LogMessage "Windows ADK will download additional components for installation"
+    Write-LogMessage "Windows ADK Installation will only be required once"
+
+    #creating a log directory for the installation
+    If (!(test-path ($env:TEMP + "\ADKLogs"))){
+        New-Item ($env:TEMP + "\ADKLogs") -Type directory | Out-Null
+    }
+
+    $logDirectory=$env:TEMP + "\ADKLogs"
+    $logDirectory=('"'+ $logDirectory+ '"')
+    $InstallArguments = ("/log $logDirectory /quiet /norestart /features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment")
+    Start-Process -FilePath ($env:TEMP + '\' + 'adksetup.exe') -ArgumentList $InstallArguments
+    
+    #Waiting for the process to initialize prior to grabbing the logfile
+    start-sleep 5
+    $dir = ($env:TEMP + "\ADKLogs")
+    $latest = Get-ChildItem -Path $dir | Sort-Object LastAccessTime -Descending | Select-Object -First 1
+    $latest.name
+    $LogFile=($env:TEMP + "\ADKLogs\" + $latest.name)
+    
+    #Monitoring the logfile to check for Exit code
+    While (1 -eq 1) {
+        $LogFileContents=Get-Content $LogFile -Tail 2   
+        $InstallStatus = $LogfileContents | %{$_ -match "Exit code: "}
+        If ($InstallStatus -contains $true) {
+            #Exit code found
+            $Installcompleted = $LogfileContents | %{$_ -match "Exit code: 0x0"}
+            If ($Installcompleted -contains $true) {
+                #Exit code is 0x0
+                Write-LogMessage -Message "Installation completed"
+                break
+            }Else{
+                Write-LogMessage -Message "Installation Failed, please install manually"
+                Write-Host -ForegroundColor Red "Windows ADK required"
+                exit
+            }
+        }
+        #sleep for 2 seconds, then check again
+        Write-host "." -NoNewline
+        Start-Sleep -s 10
+    }
+    #to avoid the . to be in front of the Write-LogMessage
+    Write-host ""
+
+    
+}Else{
 #Creating a copy of the Deployment Toolkit cmd start script so we can add the copype.cmd to it when starting
-If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat") {
     copy-item "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat" $TargetBatchFile 
         $batchfile = Get-Content $TargetBatchFile
         $batchfile += "`r`nREM Creating WinPE repository"
@@ -207,6 +263,7 @@ If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment 
     Write-LogMessage -Message "Mounting the WinPE image"
     Start-Process 'DISM' -ArgumentList $1 -WindowStyle Minimized
 
+    #Monitoring winpe.jpg file to see if mount succeeded
     $MonitorredFile=($TargetDirectory + '\mount\Windows\System32\winpe.jpg')
     While (1 -eq 1) {
         IF (Test-Path $MonitorredFile) {
@@ -229,7 +286,7 @@ If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment 
     Write-LogMessage -Message "Adding Storage WMI repository"
     Start-Process 'DISM' -wait -ArgumentList $7 -WindowStyle Minimized
 
-#Need to copy all the required files from github to the new destination
+#Need to copy all the required files from github to temp
     Write-LogMessage -Message "Downloading scripts from GitHub"
         $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.psm1'
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
