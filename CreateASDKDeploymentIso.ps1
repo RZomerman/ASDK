@@ -183,7 +183,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
             DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         }
     #If download was successfull: install ADK features we need
-    Write-LogMessage -Message "Installing Windows ADK features - this will take a while (. = 10 seconds)"
+    Write-LogMessage -Message "Installing Windows ADK features - this might take up to 30 minutes"
     Write-LogMessage -Message "Windows ADK will download additional components for installation"
     Write-LogMessage -Message "Windows ADK Installation will only be required once"
 
