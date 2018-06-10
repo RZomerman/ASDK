@@ -186,6 +186,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
     Write-LogMessage -Message "Installing Windows ADK features - this might take up to 30 minutes"
     Write-LogMessage -Message "Windows ADK will download additional components for installation"
     Write-LogMessage -Message "Windows ADK Installation will only be required once"
+    Write-LogMessage -Message "Windows ADK Installation will take-up ~5.88Gb of space on your System drive"
 
     #creating a log directory for the installation
     If (!(test-path ($env:TEMP + "\ADKLogs"))){
