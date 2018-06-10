@@ -34,8 +34,8 @@ PrepareAzureStackPOC.ps1 / psm1
 
         USB: If a local USB drive is found, the cloudbuilder.vhdx will be searched on the root of the USB drive
         Network: 
-            If $override=false is specified, the script will ask for network location, credentials and the path to the cloudbuilder.vhdx
-            If $override=true is specified, the script will use all variables defined in the script
+            If $override=$true is specified, the script will ask for network location, credentials and the path to the cloudbuilder.vhdx
+            If $override=$false is specified, the script will use all variables defined in the script
         Download:
             If the script is running in Windows 2012/2016, the download option is available. It will download the latest version and unpack the download
                 (this might take a while)
