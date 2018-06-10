@@ -222,7 +222,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
     Write-host ""
 
     
-}Else{
+}else{
 #Creating a copy of the Deployment Toolkit cmd start script so we can add the copype.cmd to it when starting
     copy-item "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat" $TargetBatchFile 
         $batchfile = Get-Content $TargetBatchFile
@@ -235,8 +235,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
             Write-LogMessage -Message "Creating base WinPE image"
             Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs -WindowStyle Minimized
             }
-    }
-    Else{
+    }else{
         Write-LogMessage -Message "Windows Deployment tools not found!" -ForegroundColor red
         exit
     }
