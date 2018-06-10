@@ -289,17 +289,17 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
         start-sleep -s 2
     }    
     write-host ""
-    Write-LogMessage -Message "Adding WMI repository"
+    Write-LogMessage -Message "Adding WMI package"
     Start-Process 'DISM' -wait -ArgumentList $2 
-    Write-LogMessage -Message "Adding Network repository"
+    Write-LogMessage -Message "Adding Network package"
     Start-Process 'DISM' -wait -ArgumentList $3 
-    Write-LogMessage -Message "Adding Scriptig repository"
+    Write-LogMessage -Message "Adding Scriptig package"
     Start-Process 'DISM' -wait -ArgumentList $4 
-    Write-LogMessage -Message "Adding Powershell repository"
+    Write-LogMessage -Message "Adding Powershell package"
     Start-Process 'DISM' -wait -ArgumentList $5 
-    Write-LogMessage -Message "Adding DISM repository"
+    Write-LogMessage -Message "Adding DISM package"
     Start-Process 'DISM' -wait -ArgumentList $6 
-    Write-LogMessage -Message "Adding Storage WMI repository"
+    Write-LogMessage -Message "Adding Storage WMI package"
     Start-Process 'DISM' -wait -ArgumentList $7
 
 #Need to copy all the required files from github to temp
@@ -319,23 +319,23 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         $DownloadedFile=Get-FileContents $outfile
 
-        
+
 #Copy the files to the mounted image
     If (test-path ($TargetDirectory + "\mount\Windows")) {
         Write-LogMessage -Message "Copying files to the mounted image"
             If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
-                $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.ps1').Replace(" ","")
+                $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.ps1')
                 write-host $target
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1') $target -Force
             }
             If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')) {
-                $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.psm1').replace(" ","")
+                $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.psm1')
                 write-host $target
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1') $target -Force
             }
     #need to take ownership of WinPE and delete it (to change background later on)
     Write-LogMessage -Message "Taking ownership of background image"
-        $BackgroundImage=($TargetDirectory + '\mount\Windows\System32\winpe.jpg').Replace(" ","")
+        $BackgroundImage=($TargetDirectory + '\mount\Windows\System32\winpe.jpg')
         Write-host "!!!!" $BackgroundImage
         $acl=Get-Acl $BackgroundImage
         $Group = New-Object System.Security.Principal.NTAccount("Builtin", "Administrators")
