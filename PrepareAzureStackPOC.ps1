@@ -22,7 +22,7 @@ If ADSKUnattend.xml does not exist, this script will create one, with default P@
  .NOTES
 #>
 
-
+<#
  #<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
  #This part was added to allow local copy from an IIS server
  # with an invalid certificate. remove for production use!
@@ -52,6 +52,7 @@ If ADSKUnattend.xml does not exist, this script will create one, with default P@
 "@
 [ServerCertificateValidationCallback]::Ignore();
 #<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#>
 
 
 #If speficied as true, it will ask the user to override the network settings
