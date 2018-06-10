@@ -67,7 +67,7 @@ $DVM_PASSWORD = 'AzureStack'
 $ShareRoot = "\\172.16.5.9\AzureStack"
 $sourceVHD="\DeployAzureStack\MASImage"
 $ADSKPassword="MySuperStrongPasswordAT@123"
-$version="201806062"
+$version="201806102"
 
 $networkSource=$true
 $DISMUpdate=$false
