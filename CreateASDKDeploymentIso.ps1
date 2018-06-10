@@ -21,7 +21,10 @@
     #>
 [cmdletbinding()]
     param (
-        [string]$TargetDirectory
+        [string]$TargetDirectory,
+        
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitLocation
     )
 
 #$TargetDirectory='d:\winpe_amd81'
@@ -240,6 +243,15 @@ If ($TargetDirectory.Contains(" ")) {
     Write-LogMessage -Message "Directory to be used: $TargetDirectory"
 }
 
+#Setting Github user location
+If ($CustomGitLocation){
+    #custom location should be in the form of: RZomerman/ASDK
+    $GitHubLocation=('https://raw.githubusercontent.com/' + $CustomGitLocation + '/master/')
+    Write-LogMessage -Message "Using Custom GitHub source $CustomGitLocation"
+}Else{
+    $GitHubLocation=('https://raw.githubusercontent.com/RZomerman/ASDK/master/')
+}
+
 #Creating a copy of the Deployment Toolkit cmd start script so we can add the copype.cmd to it when starting
     copy-item "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat" $TargetBatchFile 
         $batchfile = Get-Content $TargetBatchFile
@@ -303,21 +315,21 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
 
 #Need to copy all the required files from github to temp
     Write-LogMessage -Message "Downloading scripts from GitHub"
-        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/Start.ps1'
+        $Uri = ($GitHubLocation + 'Start.ps1')
         $OutFile  = ($env:TEMP + '\' + 'Start.ps1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
-        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.psm1'
+        $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.psm1')
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
 
-        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.ps1'
+        $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.ps1')
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
 
-        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/winpe.jpg'
+        $Uri = ($GitHubLocation + 'winpe.jpg')
         $OutFile  = ($env:TEMP + '\' + 'winpe.jpg')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
