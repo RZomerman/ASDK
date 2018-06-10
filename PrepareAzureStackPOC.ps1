@@ -262,7 +262,7 @@ $scriptRepository = ($TargetDrive + "\sources")
         CreateUnattend -File ($TargetDrive + "\ASDKUnattend.xml") -Password $ADSKPassword
         $UnattendFile = ($TargetDrive + "\ASDKUnattend.xml")
     }
-Set-HostVHDBoot -BootVHDFilePath $Target -Un $UnattendFile -SourcesRoot $scriptRepository -SystemDrive $TargetDrive
+Set-HostVHDBoot -BootVHDFilePath $Target -Un $UnattendFile -SourcesRoot $scriptRepository -SystemDrive $TargetDrive -UseWinPE $IsWinPe
 
 Write-LogMessage -Message "Copying Logfile to fixed drive"
     $date=(Get-Date).ToString("d-M-y-h.m.s")
