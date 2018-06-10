@@ -68,6 +68,7 @@ $DVM_PASSWORD = 'AzureStack'
 $ShareRoot = "\\172.16.5.9\AzureStack"
 $sourceVHDFolder="\DeployAzureStack\MASImage"
 $ADSKPassword="MySuperSecretPasswordAT@123"
+$version="201806109"
 
 ## START SCRIPT
 $NETWORK_WAIT_TIMEOUT_SECONDS = 120
