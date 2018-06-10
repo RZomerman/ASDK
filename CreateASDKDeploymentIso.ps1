@@ -28,7 +28,7 @@
     )
 
 #$TargetDirectory='d:\winpe_amd81'
-$version="201806107"
+$version="201806108"
 
 $TargetBatchFile=($env:TEMP + '\PreparewinPE.bat')
 $ClosingISOBatchFile=($env:TEMP + '\PrepareISO.bat')
