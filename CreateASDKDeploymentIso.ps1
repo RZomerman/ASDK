@@ -179,34 +179,32 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
         #https://go.microsoft.com/fwlink/?linkid=873065
         $Uri = 'https://go.microsoft.com/fwlink/?linkid=873065'
         $OutFile  = ($env:TEMP + '\' + 'adksetup.exe')
-        DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-        
+        If (!(Test-Path $OutFile)){
+            DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
+        }
     #If download was successfull: install ADK features we need
-    Write-LogMessage "Installing Windows ADK features - this will take a while (. = 10 seconds)"
-    Write-LogMessage "Windows ADK will download additional components for installation"
-    Write-LogMessage "Windows ADK Installation will only be required once"
+    Write-LogMessage -Message "Installing Windows ADK features - this will take a while (. = 10 seconds)"
+    Write-LogMessage -Message "Windows ADK will download additional components for installation"
+    Write-LogMessage -Message "Windows ADK Installation will only be required once"
 
     #creating a log directory for the installation
     If (!(test-path ($env:TEMP + "\ADKLogs"))){
         New-Item ($env:TEMP + "\ADKLogs") -Type directory | Out-Null
     }
 
-    $logDirectory=$env:TEMP + "\ADKLogs"
-    $logDirectory=('"'+ $logDirectory+ '"')
+    $adklogfile = ("ADKLog-" + (Get-Date).tostring("dd-MM-yyyy-hh-mm-ss") + ".log")
+    $logFilePath=($env:TEMP + "\ADKLogs\" + $adklogfile)
+    $logDirectory=('"'+ $logFilePath+ '"')
+    
     $InstallArguments = ("/log $logDirectory /quiet /norestart /features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment")
     Start-Process -FilePath ($env:TEMP + '\' + 'adksetup.exe') -ArgumentList $InstallArguments
-    
-    #Waiting for the process to initialize prior to grabbing the logfile
-    start-sleep 5
     Write-LogMessage -Message "Installing" -NoNewline $true
-    $dir = ($env:TEMP + "\ADKLogs")
-    $latest = Get-ChildItem -Path $dir | Sort-Object LastAccessTime -Descending | Select-Object -First 1
-    $latest.name
-    $LogFile=($env:TEMP + "\ADKLogs\" + $latest.name)
+    #Waiting for the process to initialize prior to grabbing the logfile
+    start-sleep 10
     
     #Monitoring the logfile to check for Exit code
     While (1 -eq 1) {
-        $LogFileContents=Get-Content $LogFile -Tail 2   
+        $LogFileContents=Get-Content $logFilePath -Tail 2   
         $InstallStatus = $LogfileContents | %{$_ -match "Exit code: "}
         If ($InstallStatus -contains $true) {
             #Exit code found
@@ -226,7 +224,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
         Start-Sleep -s 10
     }
     #to avoid the . to be in front of the Write-LogMessage
-    Write-host ""
+    Write-host "" | Out-Null
 
     
 }else{
