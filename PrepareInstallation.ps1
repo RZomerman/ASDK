@@ -133,7 +133,7 @@ $RegionName='local'
 $ExternalDomainSuffix='AzureStack.external'
 $DomainFQDN='AzureStack.local'
 
-If ((test-path 'D:\sources\UpdateNetworkGA.ps1') -and (test-path 'D:\sources\customization.xml') {
+If ((test-path 'D:\sources\UpdateNetworkGA.ps1') -and (test-path 'D:\sources\customization.xml')) {
     write-LogMessage -Message "Customization file found"
     write-LogMessage -Message "Extracting Azure Stack scripts"
     $DeploymentScriptPath = "$env:SystemDrive\CloudDeployment\Setup\DeploySingleNode.ps1"
