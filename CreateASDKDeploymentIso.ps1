@@ -25,7 +25,7 @@
     )
 
 #$TargetDirectory='d:\winpe_amd81'
-$version="201806105"
+$version="201806107"
 
 $TargetBatchFile=($env:TEMP + '\PreparewinPE.bat')
 $ClosingISOBatchFile=($env:TEMP + '\PrepareISO.bat')
@@ -304,6 +304,10 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
 
 #Need to copy all the required files from github to temp
     Write-LogMessage -Message "Downloading scripts from GitHub"
+        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/Start.ps1'
+        $OutFile  = ($env:TEMP + '\' + 'Start.ps1')
+        DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
+        
         $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.psm1'
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
@@ -321,13 +325,21 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
 
 #Copy the files to the mounted image
     If (test-path ($TargetDirectory + "\mount\Windows")) {
-        Write-LogMessage -Message "Copying files to the mounted image"
-            If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
+        Write-LogMessage -Message "Copying files to the mounted image" -NoNewLine $true
+        If (test-path ($env:TEMP + '\' + 'Start.ps1')) {
+            $target=($TargetDirectory + '\mount\Start.ps1')
+            write-host "." -NoNewline
+            Copy-Item ($env:TEMP + '\' + 'Statr.ps1') $target -Force
+        }
+
+        If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
                 $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.ps1')
+                write-host "." -NoNewline
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1') $target -Force
             }
             If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')) {
                 $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.psm1')
+                write-host "." -NoNewline
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1') $target -Force
             }
     #need to take ownership of WinPE and delete it (to change background later on)
