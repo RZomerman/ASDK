@@ -56,7 +56,7 @@ If ADSKUnattend.xml does not exist, this script will create one, with default P@
 
 
 #If speficied as true, it will ask the user to override the network settings
-$override=$false
+$override=$true
 
 #If DellHost it will download OpenManage
 $DellHost = $false
