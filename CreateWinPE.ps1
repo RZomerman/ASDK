@@ -4,7 +4,27 @@ $ScriptWorkingDirectory='c:\scripts'
 
 $TargetBatchFile='c:\scripts\PreparewinPE.bat'
 $CloseBatchFile='c:\scripts\PrepareISO.bat'
-$version="201806101"
+$version="201806102"
+
+
+Function Get-FileContents {
+    Param(
+    [string]$file
+    )
+    Process
+    {
+        $read = New-Object System.IO.StreamReader($file)
+        $serverarray = @()
+
+        while (($line = $read.ReadLine()) -ne $null)
+        {
+            $serverarray += $line
+        }
+
+        $read.Dispose()
+        return $serverarray
+    }
+}
 
 function DownloadWithRetry
 {
@@ -111,7 +131,7 @@ If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment 
 #run with the Deployment and Imaging Tools Environment (cmdlet) - https://docs.microsoft.com/en-us/windows/deployment/windows-adk-scenarios-for-it-pros
         Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs
     }
-    Elsif {
+    Elseif {
         Write-host "Windows Deployment tools not found!" -ForegroundColor red
         exit
     }
@@ -119,7 +139,7 @@ If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment 
 #Need to wait for the full extraction to be completed
     $MonitorredFile=($IsoMountDirectory + '\Media\zh-tw\bootmgr.efi.mui')
     While (1 -eq 1) {
-        IF (Test-Path $theFile) {
+        IF (Test-Path $MonitorredFile) {
             #file exists. break loop
             break
         }
