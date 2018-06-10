@@ -4,7 +4,7 @@ $ScriptWorkingDirectory='c:\scripts'
 
 $TargetBatchFile='c:\scripts\PreparewinPE.bat'
 $CloseBatchFile='c:\scripts\PrepareISO.bat'
-$version="201806102"
+$version="201806103"
 
 
 Function Get-FileContents {
@@ -129,9 +129,11 @@ If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment 
         Set-Content -Value $batchfile -Path $TargetBatchFile -Force
 
 #run with the Deployment and Imaging Tools Environment (cmdlet) - https://docs.microsoft.com/en-us/windows/deployment/windows-adk-scenarios-for-it-pros
-        Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs
+        If (!(test-path ($IsoMountDirectory + '\media'))) {       
+            Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs
+            }
     }
-    Elseif {
+    Else {
         Write-host "Windows Deployment tools not found!" -ForegroundColor red
         exit
     }
@@ -155,7 +157,18 @@ If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment 
     $6=('/Image:' + $IsoMountDirectory + '\mount /Add-Package /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-DismCmdlets.cab"')
     $7=('/Image:' + $IsoMountDirectory + '\mount /Add-Package /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-StorageWMI.cab"') 
 
-    Start-Process 'DISM' -wait -ArgumentList $1 
+    Start-Process 'DISM' -ArgumentList $1 
+
+    $MonitorredFile=($IsoMountDirectory + '\mount\Windows\System32\winpe.jpg')
+    While (1 -eq 1) {
+        IF (Test-Path $MonitorredFile) {
+            #file exists. break loop
+            break
+        }
+        #sleep for 2 seconds, then check again
+        Start-Sleep -s 2
+    }
+
     Start-Process 'DISM' -wait -ArgumentList $2
     Start-Process 'DISM' -wait -ArgumentList $3 
     Start-Process 'DISM' -wait -ArgumentList $4 
