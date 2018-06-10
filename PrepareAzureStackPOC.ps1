@@ -22,7 +22,7 @@ If ADSKUnattend.xml does not exist, this script will create one, with default P@
  .NOTES
 #>
 
-
+<#
 ## ADDED TO SKIP THE SSL CERT CHECK MUST BE REMOVED
 Add-Type @"
     using System;
@@ -49,6 +49,7 @@ Add-Type @"
 "@
  
 [ServerCertificateValidationCallback]::Ignore();
+#>
 
 ## START SCRIPT
 $NETWORK_WAIT_TIMEOUT_SECONDS = 120
@@ -68,8 +69,26 @@ $sourceVHD="\DeployAzureStack\MASImage"
 $ADSKPassword="MySuperStrongPasswordAT@123"
 $version="201806062"
 
+$networkSource=$true
+$DISMUpdate=$false
+$global:logname = $null
 try
 {
+    If (!(test-path x:\))    {
+        $LogDriveLetter='.'
+    }else{
+        $LogDriveLetter='X:'
+    }
+    $global:logname = ($LogDriveLetter + "\ASDKDeployment.log") 
+
+    #Check if PowerShell Version is up to date.. (for Win2012R2 installs)
+    If (!($PSVersionTable.PSVersion.Major -ge 5))  {
+        Write-Host "Powershell version is not to up date... please install update"
+        write-host "https://www.microsoft.com/en-us/download/details.aspx?id=50395"
+    exit
+    }
+
+
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $winPEStartTime = (Get-Date).ToString('yyyy/MM/dd HH:mm:ss')
 
