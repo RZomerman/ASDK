@@ -150,8 +150,10 @@ Write-LogMessage -Message "Validating if a newer version is available..."
             exit
         }
         Elseif ($version -eq $Localversion){
+                Write-LogMessage -Message "Using local script"
         }
-        Else {
+        Else{
+            Write-LogMessage -Message "Using local script"
         }
     }
 
@@ -234,7 +236,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
             Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs -WindowStyle Minimized
             }
     }
-    Else {
+    Else{
         Write-LogMessage -Message "Windows Deployment tools not found!" -ForegroundColor red
         exit
     }
