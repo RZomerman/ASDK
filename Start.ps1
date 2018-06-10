@@ -11,7 +11,7 @@ If no internet is found, it will continue to use the local version of the Prepar
  .NOTES
 #>
 
-
+<#
 Add-Type @"
     using System;
     using System.Net;
@@ -35,8 +35,10 @@ Add-Type @"
         }
     }
 "@
+
  
 [ServerCertificateValidationCallback]::Ignore();
+#>
 
 Function Get-FileContents {
     Param(
