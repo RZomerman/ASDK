@@ -5,7 +5,7 @@ $ScriptWorkingDirectory='c:\scripts'
 $TargetBatchFile='c:\scripts\PreparewinPE.bat'
 $ClosingISOBatchFile='c:\scripts\PrepareISO.bat'
 
-$version="201806104"
+$version="201806105"
 
 
 function Write-LogMessage {
@@ -280,7 +280,12 @@ Write-LogMessage -Message "Setting the autostart scripts"
             $ISOfile += "`r`n$ISO"
             Set-Content -Value $ISOfile -Path $ClosingISOBatchFile -Force
         Write-LogMessage -Message "Creating the ISO image"
+        $MonitorredFile=($IsoMountDirectory + '\WinPE_ASDK_Stack.iso')
+        If (test-path $MonitorredFile) {
+            Write-LogMessage "ISO is already present.."
+        }Else{        
         Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs -WindowStyle Minimized
+        }
 }
 
 $MonitorredFile=($IsoMountDirectory + '\WinPE_ASDK_Stack.iso')
