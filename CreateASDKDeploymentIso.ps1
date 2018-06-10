@@ -21,7 +21,7 @@
     #>
 [cmdletbinding()]
     param (
-        [string[]]$TargetDirectory
+        [string]$TargetDirectory
     )
 
 #$TargetDirectory='d:\winpe_amd81'
@@ -46,12 +46,12 @@ function Write-LogMessage {
     PROCESS {
       Write-Verbose "Writing log message"
       # Function for displaying formatted log messages.  Also displays time in minutes since the script was started
-      If ($NoNewLine) {
-        write-Host "($message)" -ForegroundColor White -NoNewline;
-      }Else{
         write-host (Get-Date).ToShortTimeString() -ForegroundColor Cyan -NoNewline;
         write-host ' - [' -ForegroundColor White -NoNewline;
         write-host $systemName -ForegroundColor Yellow -NoNewline;
+      If ($NoNewLine) {
+        write-Host "]::$($message)" -ForegroundColor White -NoNewline;
+      }Else{
         write-Host "]::$($message)" -ForegroundColor White;
       }
     }
@@ -121,12 +121,12 @@ function DownloadWithRetry{
 }
 
 
-cls
+
 Write-Host "      *******************************" -foregroundColor Yellow
 write-host "        Welcome to the ASDK BUILDER " -foregroundColor Yellow
 Write-Host "      *******************************" -foregroundColor Yellow
 write-host ""
-Write-LogMessage -Message "Validating if a newer version is available..."
+Write-LogMessage -Message "Validating if a newer version is available."
 
     $localversion=$version
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -172,7 +172,7 @@ Write-LogMessage -Message "Validating if a newer version is available..."
         exit
     }
 
-
+$CopyDir=$TargetDirectory
 #Validating if Windows ADK is installed
 If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat")) {
     Write-LogMessage -Message "Windows Assessment and Deployment Kit (Windows ADK) was not found"
@@ -198,6 +198,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
     
     #Waiting for the process to initialize prior to grabbing the logfile
     start-sleep 5
+    Write-LogMessage -Message "Installing" -NoNewline $true
     $dir = ($env:TEMP + "\ADKLogs")
     $latest = Get-ChildItem -Path $dir | Sort-Object LastAccessTime -Descending | Select-Object -First 1
     $latest.name
@@ -259,7 +260,7 @@ If ($TargetDirectory.Contains(" ")) {
 
 #Need to wait for the copype.cmd to be completed - last file seems to be Media\zh-tw\bootmgt.efi.mui
 $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
-    Write-LogMessage -Message "waiting for copy to complete..."
+    Write-LogMessage -Message "waiting for copy to complete"
     start-sleep -Seconds 3
     While (1 -eq 1) {
         IF (Test-Path $MonitorredFile) {
@@ -279,8 +280,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
     $5=('/Image:' + $TargetDirectory + '\mount /Add-Package /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-PowerShell.cab"')
     $6=('/Image:' + $TargetDirectory + '\mount /Add-Package /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-DismCmdlets.cab"')
     $7=('/Image:' + $TargetDirectory + '\mount /Add-Package /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-StorageWMI.cab"') 
-
-    Write-LogMessage -Message "Mounting the WinPE image"
+    Write-LogMessage -Message "Mounting the WinPE image" -NoNewline $true
     Start-Process 'DISM' -ArgumentList $1 
 
 #Need to check if c:\windows\system32\dism.exe is still running
@@ -319,28 +319,20 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
 
-write-host ($TargetDirectory + "!")
-write-host $TargetDirectory.GetType()
-
 #Copy the files to the mounted image
     If (test-path ($TargetDirectory + "\mount\Windows")) {
         Write-LogMessage -Message "Copying files to the mounted image"
             If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
                 $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.ps1')
-                write-host $TargetDirectory.Length
-                write-host $TargetDirectory.GetType()
-                write-host ($TargetDirectory + "!")
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1') $target -Force
             }
             If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')) {
                 $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.psm1')
-                write-host $target
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1') $target -Force
             }
     #need to take ownership of WinPE and delete it (to change background later on)
     Write-LogMessage -Message "Taking ownership of background image"
         $BackgroundImage=($TargetDirectory + '\mount\Windows\System32\winpe.jpg')
-        Write-host "!!!!" $BackgroundImage
         $acl=Get-Acl $BackgroundImage
         $Group = New-Object System.Security.Principal.NTAccount("Builtin", "Administrators")
         $ACL.SetOwner($Group)
