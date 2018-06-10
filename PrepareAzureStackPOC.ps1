@@ -286,7 +286,23 @@ Write-LogMessage -Message "Configure boot and storage Disks."
  }else{
      Write-LogMessage -Message "Copying $sourceVHDLocation to '$Target'"
      copy-file -from $sourceVHDLocation -to $Target -force
+     Write-LogMessage -Message "Copying support files"
+     $TargetForChangeNetwork=($TargetDrive + "\sources\changeNetworkGA.ps1")
+     $TargetForCustomDeployment = ($TargetDrive + "\sources\customization.xml")
+     If (test-path $changeNetworkGA) {
+         If (!(test-path ($TargetDrive + "\sources"))) {
+              New-Item ($TargetDrive + "\sources") -Type directory | Out-Null
+         }
+         copy-file -from $ChangeNetworkGA -to $TargetForChangeNetwork -force
      }
+     If (test-path $CustomDeployment) {
+        If (!(test-path ($TargetDrive + "\sources"))) {
+            New-Item ($TargetDrive + "\sources") -Type directory | Out-Null
+        }
+        copy-file -from $CustomDeployment -to $TargetForCustomDeployment -force
+        }
+
+}
 
 
 

@@ -44,6 +44,44 @@ write-host "        Welcome back to the ASDK PREPARATION SCRIPT " -foregroundCol
 Write-Host "      ************************************************" -foregroundColor Yellow
 write-host ""
 
+# This part is for the custom deployment where we want to change the internal network
+#NOTE THAT THIS HERE BELOW IS COMPLETELY WITHOUT ANY SUPPORT - AND FULLY UNSUPPORTED - DID I MENTION like **NO** SUPPORT AT ALL?
+$RegionName='local'
+$ExternalDomainSuffix='AzureStack.external'
+$DomainFQDN='AzureStack.local'
+
+If (test-path 'D:\sources\customization.xml') {
+    write-LogMessage -Message "Customization file found"
+    write-LogMessage -Message "Extracting Azure Stack scripts"
+    $DeploymentScriptPath = "$env:SystemDrive\CloudDeployment\Setup\DeploySingleNode.ps1"
+    if (!(Test-Path $DeploymentScriptPath))
+        {
+            . C:\CloudDeployment\Setup\BootstrapAzureStackDeployment.ps1
+        }
+    
+    [xml]$CustomXML=Get-Content 'D:\sources\customization.xml'
+    If (($CustomXML.custom.ExternalNetwork) -and (test-path 'D:\sources\UpdateNetworkGA.ps1')){
+        $CustomExtNetwork=$CustomXML.custom.ExternalNetwork.value
+        Write-LogMessage -message "Custom External Network $CustomExtNetwork"
+        cd d:\sources
+        .\UpdateNetworkGA.ps1 -ExternalNetwork $CustomXML.custom.ExternalNetwork.value
+    }
+
+    If ($CustomXML.custom.RegionName){
+        $RegionName=$CustomXML.custom.RegionName.value
+        Write-LogMessage -Message "Custom Region set to $RegionName"
+    }
+    If ($CustomXML.custom.ExternalDomainSuffix.value){
+        $ExternalDomainSuffix=$CustomXML.custom.ExternalDomainSuffix.value
+        Write-LogMessage -Message "Custom ExternalDomainSuffix set to: $ExternalDomainSuffix"
+    }
+    If ($CustomXML.custom.DomainFQDN.value){
+        $DomainFQDN=$CustomXML.custom.DomainFQDN.value
+        Write-LogMessage -Message "Custom DomainFQDN set to: $DomainFQDN"
+    }
+}
+
+
 #Set screen power option to infinite to avoid lockscreen
 If (test-path c:\Windows\System32\powercfg.exe) {
     write-LogMessage -Message "Disabling Screen Power shutdown (so screen stays on during install) "
@@ -127,38 +165,6 @@ If ((test-path D:\sources\openmanage.exe) -and (!(test-path 'C:\OpenManage'))){
 }
 
 
-# This part is for the custom deployment where we want to change the internal network
-#NOTE THAT THIS HERE BELOW IS COMPLETELY WITHOUT ANY SUPPORT - AND FULLY UNSUPPORTED - DID I MENTION like **NO** SUPPORT AT ALL?
-$RegionName='local'
-$ExternalDomainSuffix='AzureStack.external'
-$DomainFQDN='AzureStack.local'
-
-If ((test-path 'D:\sources\UpdateNetworkGA.ps1') -and (test-path 'D:\sources\customization.xml')) {
-    write-LogMessage -Message "Customization file found"
-    write-LogMessage -Message "Extracting Azure Stack scripts"
-    $DeploymentScriptPath = "$env:SystemDrive\CloudDeployment\Setup\DeploySingleNode.ps1"
-    if (!(Test-Path $DeploymentScriptPath))
-        {
-            . C:\CloudDeployment\Setup\BootstrapAzureStackDeployment.ps1
-        }
-    
-    [xml]$CustomXML=Get-Content 'D:\sources\customization.xml'
-    If ($CustomXML.custom.ExternalNetwork){
-        Write-LogMessage -message "Custom External Network found"
-        cd d:\sources
-        .\UpdateNetworkGA.ps1 -ExternalNetwork $CustomXML.custom.ExternalNetwork.value
-    }
-
-    If ($CustomXML.custom.RegionName){
-        $RegionName=$CustomXML.custom.RegionName.value
-    }
-    If ($CustomXML.custom.ExternalDomainSuffix.value){
-        $ExternalDomainSuffix=$CustomXML.custom.ExternalDomainSuffix.value
-    }
-    If ($CustomXML.custom.DomainFQDN.value){
-        $DomainFQDN=$CustomXML.custom.DomainFQDN.value
-    }
-}
 
 #Disabling unconnected NIC's
 Get-NetAdapter | where {$_.status -eq 'Disconnected'} | Disable-NetAdapter -Confirm:$false
