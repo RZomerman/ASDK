@@ -307,25 +307,29 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
         $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.psm1'
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-        $DownloadedFile=Get-FileContents $outfile
+        
 
         $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.ps1'
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-        $DownloadedFile=Get-FileContents $outfile
+        
 
         $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/winpe.jpg'
         $OutFile  = ($env:TEMP + '\' + 'winpe.jpg')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-        $DownloadedFile=Get-FileContents $outfile
+        
 
+write-host ($TargetDirectory + "!")
+write-host $TargetDirectory.GetType()
 
 #Copy the files to the mounted image
     If (test-path ($TargetDirectory + "\mount\Windows")) {
         Write-LogMessage -Message "Copying files to the mounted image"
             If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
                 $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.ps1')
-                write-host $target
+                write-host $TargetDirectory.Length
+                write-host $TargetDirectory.GetType()
+                write-host ($TargetDirectory + "!")
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1') $target -Force
             }
             If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')) {
