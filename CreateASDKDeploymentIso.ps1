@@ -314,22 +314,26 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
     Start-Process 'DISM' -wait -ArgumentList $7
 
 #Need to copy all the required files from github to temp
-    Write-LogMessage -Message "Downloading scripts from GitHub"
+    Write-LogMessage -Message "Downloading scripts from GitHub"  
         $Uri = ($GitHubLocation + 'Start.ps1')
+        #write-host $uri
         $OutFile  = ($env:TEMP + '\' + 'Start.ps1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
         $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.psm1')
+        #write-host $uri
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
 
         $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.ps1')
+        #write-host $uri
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
 
         $Uri = ($GitHubLocation + 'winpe.jpg')
+        #write-host $uri
         $OutFile  = ($env:TEMP + '\' + 'winpe.jpg')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
@@ -340,7 +344,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
         If (test-path ($env:TEMP + '\' + 'Start.ps1')) {
             $target=($TargetDirectory + '\mount\Start.ps1')
             write-host "." -NoNewline
-            Copy-Item ($env:TEMP + '\' + 'Statr.ps1') $target -Force
+            Copy-Item ($env:TEMP + '\' + 'Start.ps1') $target -Force
         }
 
         If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
@@ -354,6 +358,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1') $target -Force
             }
     #need to take ownership of WinPE and delete it (to change background later on)
+    write-host "" | Out-Null
     Write-LogMessage -Message "Taking ownership of background image"
         $BackgroundImage=($TargetDirectory + '\mount\Windows\System32\winpe.jpg')
         $acl=Get-Acl $BackgroundImage

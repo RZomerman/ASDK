@@ -12,6 +12,16 @@ CreateASDKDeploymentISO.ps1
         additional files. 
     Once the download is complete, boot your server from the ISO. 
 
+    It is also possible to use a custom GITHUB repo : 
+        CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitLocation <username>/Repository
+
+        example:
+            CreateASDKDeploymentISO.ps1 -TargetDirectory c:\isomake -CustomGitLocation RZomerman/ASDK
+        
+        Important:
+            username and repository are CaSeSensiTive  only name and repo will be required
+            the script will always use the master branch
+
 
 Start.ps1
     This script is ran initially when booting from the created ISO. It will check for the latest script versions and if a newer PrepareAzureStackPOC.ps1 is found
