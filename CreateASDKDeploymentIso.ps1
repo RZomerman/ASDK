@@ -208,7 +208,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
                 #Exit code is 0x0
                 Write-LogMessage -Message "Installation completed"
                 break
-            }Else{
+            } Else {
                 Write-LogMessage -Message "Installation Failed, please install manually"
                 Write-Host -ForegroundColor Red "Windows ADK required"
                 exit
@@ -222,7 +222,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
     Write-host ""
 
     
-}else{
+} else {
 #Creating a copy of the Deployment Toolkit cmd start script so we can add the copype.cmd to it when starting
     copy-item "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat" $TargetBatchFile 
         $batchfile = Get-Content $TargetBatchFile
@@ -235,7 +235,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
             Write-LogMessage -Message "Creating base WinPE image"
             Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs -WindowStyle Minimized
             }
-    }else{
+    } else {
         Write-LogMessage -Message "Windows Deployment tools not found!" -ForegroundColor red
         exit
     }
@@ -359,8 +359,8 @@ Write-LogMessage -Message "Setting the autostart scripts"
         $MonitorredFile=($TargetDirectory + '\WinPE_ASDK_Stack.iso')
         If (test-path $MonitorredFile) {
             Write-LogMessage "ISO is already present.."
-        }Else{        
-        Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs -WindowStyle Minimized
+        } Else {        
+            Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs -WindowStyle Minimized
         }
 }
 
