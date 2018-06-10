@@ -1,4 +1,4 @@
-$IsoMountDirectory='d:\winpe_amd80'
+$IsoMountDirectory='d:\winpe_amd81'
 $ScriptWorkingDirectory='c:\scripts'
 
 
@@ -50,8 +50,7 @@ Function Get-FileContents {
     }
 }
 
-function DownloadWithRetry
-{
+function DownloadWithRetry{
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
@@ -141,7 +140,7 @@ Write-LogMessage -Message "Validating if a newer version is available..."
 
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    If (!($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
+    If (!($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))){
         Write-LogMessage -Message "User is not administrator - forced quit" 
         exit
     }
@@ -157,7 +156,7 @@ If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment 
 #Starting the Deployment Toolkit CMD from the created batchfile - this will automatically start the copype.cmd script
         If (!(test-path ($IsoMountDirectory + '\media'))) {       
             Write-LogMessage -Message "Creating base WinPE image"
-            Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs
+            Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs -WindowStyle Minimized
             }
     }
     Else {
@@ -230,8 +229,8 @@ If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment 
         $DownloadedFile=Get-FileContents $outfile
 
 #Copy the files to the mounted image
-    If (test-path ($IsoMountDirectory + "\mount\Windows")) {
-        Write-LogMessage -Message "Copying files to the mounted image"
+If (test-path ($IsoMountDirectory + "\mount\Windows")) {
+    Write-LogMessage -Message "Copying files to the mounted image"
         If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
             Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1') ($IsoMountDirectory + '\mount\PrepareAzureStackPOC.ps1') -Force
         }
@@ -266,11 +265,12 @@ Write-LogMessage -Message "Setting the autostart scripts"
     $startnet += "`r`npowershell -NoExit -c X:\Start.ps1"
     $startnet
     Set-Content -Value $startnet -Path ($IsoMountDirectory +  "\mount\windows\system32\startnet.cmd") -Force
+}
 
 #Closing the mount and making an ISO out of it.....
     $DISM=('/unmount-image /mountdir:' + $IsoMountDirectory + '\mount /commit')
     Write-LogMessage -Message "Unmounting the image"
-    Start-process 'Dism' -ArgumentList $DISM -Wait
+    Start-process 'Dism' -ArgumentList $DISM -Wait -WindowStyle Minimized
     
     $ISO=('MakeWinPEMedia /ISO ' + $IsoMountDirectory + ' ' + $IsoMountDirectory + '\WinPE_ASDK_Stack.iso')
     If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat") {
@@ -280,8 +280,21 @@ Write-LogMessage -Message "Setting the autostart scripts"
             $ISOfile += "`r`n$ISO"
             Set-Content -Value $ISOfile -Path $ClosingISOBatchFile -Force
         Write-LogMessage -Message "Creating the ISO image"
-        Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs
+        Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs -WindowStyle Minimized
 }
+
+$MonitorredFile=($IsoMountDirectory + '\WinPE_ASDK_Stack.iso')
+Write-LogMessage -Message "waiting for ISO to be created"
+While (1 -eq 1) {
+    IF (Test-Path $MonitorredFile) {
+        #file exists. break loop
+        break
+    }
+    #sleep for 2 seconds, then check again
+    write-host "." -NoNewline
+    Start-Sleep -s 4
+}
+
 If (test-path ($IsoMountDirectory + '\WinPE_ASDK_Stack.iso')) {
     Write-LogMessage -Message "Iso successfully created"
     $ISOOutput=($IsoMountDirectory + '\WinPE_ASDK_Stack.iso')
