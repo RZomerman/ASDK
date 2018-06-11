@@ -89,7 +89,7 @@ $DellHost = $false
 
 #If specified, it will go to the network share to download the Cloudbuilder.vhdx..
 #Username and password for network
-$version="201806112"
+$version="201806113"
 
 ## START SCRIPT
 $NETWORK_WAIT_TIMEOUT_SECONDS = 120
@@ -140,9 +140,9 @@ try
  Write-LogMessage -Message "Made by $HostManufacturer"
  
  #If password is still set to NULL 
-    If (!($ADSKPassword)) {
+    If (!($ASDKPassword)) {
         Write-AlertMessage -Message "Please specify a password to use"
-        $ADSKPassword = Read-Host
+        $ASDKPassword = Read-Host
     }
  Write-LogMessage -Message "Initializing ASDK Script"
  
@@ -349,7 +349,7 @@ Write-LogMessage -Message "Configure boot and storage Disks."
          $UnattendFile = $sourceVHDLocation + "\ASDKUnattend.xml"
          }
      If (!(test-path $UnattendFile)){
-         CreateUnattend -File ($TargetDrive + "\ASDKUnattend.xml") -Password $ADSKPassword
+         CreateUnattend -File ($TargetDrive + "\ASDKUnattend.xml") -Password $ASDKPassword
          $UnattendFile = ($TargetDrive + "\ASDKUnattend.xml")
      }
 

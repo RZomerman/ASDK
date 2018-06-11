@@ -460,7 +460,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
     #Closing the mount and making an ISO out of it.....
         $DISM=('/unmount-image /mountdir:' + $TargetDirectory + '\mount /commit')
         Write-LogMessage -Message "Unmounting the image"
-#        Start-process 'Dism' -ArgumentList $DISM -Wait -WindowStyle Minimized
+        Start-process 'Dism' -ArgumentList $DISM -Wait -WindowStyle Minimized
         
         $ISO=('MakeWinPEMedia /ISO ' + $TargetDirectory + ' ' + $TargetDirectory + '\WinPE_ASDK_Stack.iso')
         If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat") {
@@ -474,7 +474,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
             If (test-path $MonitorredFile) {
                 Write-LogMessage "ISO is already present.."
             } Else {        
-#                Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs -WindowStyle Minimized
+                Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs -WindowStyle Minimized
             }
     }
 
