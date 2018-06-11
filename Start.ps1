@@ -43,6 +43,21 @@ Add-Type @"
 [cmdletbinding()]
     param (
         [parameter(Mandatory = $false)]
+        [boolean]$ForceRun,
+
+        [parameter(Mandatory = $false)]
+        [string]$ASDKPassword,
+
+        [parameter(Mandatory = $false)]
+        [string]$ShareUsername,
+
+        [parameter(Mandatory = $false)]
+        [string]$SharePassword,
+
+        [parameter(Mandatory = $false)]
+        [string]$NetworkVHDLocation,
+
+        [parameter(Mandatory = $false)]
         [string]$CustomGitLocation,
 
         [parameter(Mandatory = $false)]
@@ -113,8 +128,6 @@ function DownloadWithRetry
         }
     }
 }
-
-
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $winPEStartTime = (Get-Date).ToString('yyyy/MM/dd HH:mm:ss')
 #$ScriptVersion=(Get-Item x:\PrepareAzureStackPOC.ps1).LastWriteTime
@@ -177,4 +190,35 @@ $ScriptVersion=Get-FileContents 'x:\PrepareAzureStackPOC.ps1'
             Write-host "local version is newer"
         }
     }
+#Manual deployment straight from start
+    If ($ForceRun){
+        $BaseCommand='x:\PrepareAzureStackPOC.ps1'
+        If ($ShareUsername) {               
+            $NewCommand=($NewCommand + " -ShareUserName " + $ShareUsername)
+        }
+        If ($SharePassword) {               
+            $NewCommand=($NewCommand + " -SharePassword " + $SharePassword)
+        }
+        If ($NetworkVHDLocation){
+            $NewCommand=($NewCommand + " -NetworkVHDLocation " + $NetworkVHDLocation)
+        }
+        If ($ASDKPassword){
+            $NewCommand=($NewCommand + " -ASDKPassword " + $ASDKPassword)
+        }
+        If ($CustomGitLocation){
+            $NewCommand=($NewCommand + " -CustomGitLocation " + $CustomGitLocation)
+            $NewStartCommand=($NewStartCommand + " -CustomGitLocation " + $CustomGitLocation)
+        }
+        If ($CustomGitBranch){
+            $NewCommand=($NewCommand + " -CustomGitBranch " + $CustomGitBranch)
+            $NewStartCommand=($NewStartCommand + " -CustomGitBranch " + $CustomGitBranch)
+        }
+        $Command=($BaseCommand + $NewCommand)
+        Write-Verbose $Command
+        Invoke-Expression "& `"$BaseCommand`" $NewCommand"
+    
+        Exit
+    }
+#Automated deployment will be added below
+
 

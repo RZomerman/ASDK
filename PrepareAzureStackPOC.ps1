@@ -56,7 +56,7 @@ If ADSKUnattend.xml does not exist, this script will create one, with default P@
 
 [cmdletbinding()]
     param (
-        [parameter(Mandatory = $true)]
+        [parameter(Mandatory = $false)]
         [string]$ASDKPassword,
 
         [parameter(Mandatory = $false)]

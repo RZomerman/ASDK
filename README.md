@@ -3,7 +3,7 @@
 CreateASDKDeploymentISO.ps1
     
     Run from an Administrative PowerShell: 
-        CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO>
+        CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -ASDKPassword <Password>
     to create a new ISO deployment file. The <folder to create ISO> should not yet exist. For example c:\winpeISO
     The script will use the Windows ADK to create a new ISO file that contains WindowsPE. During the creation it will download the latest scripts
         from the GitHub repository and place these on the root of WinPE (PrepareAzureStackPOC.ps1 / psm1 and Start.ps1). It will also download
@@ -12,20 +12,45 @@ CreateASDKDeploymentISO.ps1
         additional files. 
     Once the download is complete, boot your server from the ISO. 
 
-    It is also possible to use a custom GITHUB repo : 
-        CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitLocation <username>/Repository
 
-        example:
-            CreateASDKDeploymentISO.ps1 -TargetDirectory c:\isomake -CustomGitLocation RZomerman/ASDK
+    OPTIONAL PARAMETERS
+        CustomGitLocation - to use a custom GITHUB repo : 
+            CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitLocation <username>/Repository
+
+        CustomGitBranch - use a custom GITHUB branch : 
+            CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitBranch development
+
+        ASDKPassword - password will be used for the deployment. If no password is specified, the PrepareAzureStackPOC.ps1 will ask for a password
+            CreateASDKDeploymentISO.ps1 -ASDKPassword <Password>
         
+        NetworkVHDLocation - specifies folder where to find the cloudbuilder.vhd 
+            Must be specified together with
+                ShareUserName - username to access the network share
+                SharePassword - password to access the network drive
+            
+                    CreateASDKDeploymentISO.ps1 -NetworkVHDLocation <UNCPath> -ShareUsername <user> -SharePassword <password>
+
+    
+
+    example:
+            CreateASDKDeploymentISO.ps1 -ASDKPassword MYPAssword -TargetDirectory c:\test2 -ShareUsername AzureStack -SharePassword
+                AzureStack -NetworkVHDLocation \\172.16.5.9\azurestack\DeployAzureStack\MASImage -CustomGitBranch development -CustomGitLocation RZomerman/ASDK
+        
+
         Important:
-            username and repository are CaSeSensiTive  only name and repo will be required
-            the script will always use the master branch
+            Git repository and GitBranch are CaSeSensiTive 
 
 
 Start.ps1
     This script is ran initially when booting from the created ISO. It will check for the latest script versions and if a newer PrepareAzureStackPOC.ps1 is found
         it will download it and run the newer version.
+
+    OPTIONAL PARAMETERS
+        CustomGitLocation - to use a custom GITHUB repo : 
+            CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitLocation <username>/Repository
+
+        CustomGitBranch - use a custom GITHUB branch : 
+            CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitBranch development
 
 PrepareAzureStackPOC.ps1 / psm1
     This script will prepare the server for ASDK. It can run in multiple modes, which are described later. The script will !DELETE ALL DATA ON ALL DRIVES! and          therefore NEVER run the script on anything else than your ASDK host. (there are some failsaves built-in, but the warning stands). After preparing the drives 
