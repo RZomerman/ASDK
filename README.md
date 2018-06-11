@@ -61,6 +61,7 @@ Examples:
 
 
 Start.ps1
+
     This script is ran initially when booting from the created ISO. It will check for the latest script versions and if a newer PrepareAzureStackPOC.ps1 is found
         it will download it and run the newer version.
 
@@ -75,6 +76,7 @@ Start.ps1
 
 
 PrepareAzureStackPOC.ps1 / psm1
+
     This script will prepare the server for ASDK. It can run in multiple modes, which are described later. The script will !DELETE ALL DATA ON ALL DRIVES! and          therefore NEVER run the script on anything else than your ASDK host. (there are some failsaves built-in, but the warning stands). After preparing the drives 
         it will download support scripts and services and if a Dell hardware host is found, it will also download Dell OpenManage. It will also try to find the 
         CloudBuilder.vhdx (the ASDK file) from multiple sources
@@ -93,6 +95,7 @@ PrepareAzureStackPOC.ps1 / psm1
                 
 
 PrepareInstallation.ps1
+
     After the WinPE part of the deployment is completed, the server will be rebooted in the ASDK vhdx. After the initial boot, the PrepareInstallation.ps1 is started
     This script will install the supporting bits (like OpenManage, Visual Studio Code... ) as well as prepare the host by disabling Windows Update, enabling high-power scheme and other items.
     If a custom installation document is found, the ASDK deployment will follow the customizations in the JSON file. 
