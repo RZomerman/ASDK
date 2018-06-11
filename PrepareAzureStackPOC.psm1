@@ -298,7 +298,14 @@ function DownloadScripts {
 
         [Parameter(Mandatory=$false)]
         [string]
-        $DISMUpdate
+        $DISMUpdate,
+
+        [parameter(Mandatory = $true)]
+        [string]$CustomGitLocation,
+
+        [parameter(Mandatory = $true)]
+        [string]$CustomGitBranch
+
     )
     #updated for tls1.1 expiration
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -333,7 +340,8 @@ function DownloadScripts {
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         
         Write-LogMessage -Message "Downloading CustomInstaller"
-        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareInstallation.ps1'
+        $GitHubLocation=('https://raw.githubusercontent.com/' + $CustomGitLocation + '/' + $CustomGitBranch + '/')
+        $Uri = ($GitHubLocation + 'PrepareInstallation.ps1')
         $OutFile  = ($SourcesRoot + '\' + 'PrepareInstallation.ps1')
         DownloadWithRetry -url $uri -downloadLocation $OutFile -retries 3
 

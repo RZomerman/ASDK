@@ -54,20 +54,41 @@ If ADSKUnattend.xml does not exist, this script will create one, with default P@
 #<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #>
 
+[cmdletbinding()]
+    param (
+        [parameter(Mandatory = $true)]
+        [string]$ASDKPassword,
 
-#If speficied as true, it will ask the user to override the network settings
-$override=$true
+        [parameter(Mandatory = $false)]
+        [string]$ShareUsername,
+
+        [parameter(Mandatory = $false)]
+        [string]$SharePassword,
+
+        [parameter(Mandatory = $false)]
+        [string]$NetworkVHDLocation,
+
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitLocation,
+
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitBranch
+    )
+
+#If speficied as true, it will ask the user to override the network settings - set to true if parameters are given
+#Setting the default variables if none are given
+If (!($NetworkVHDLocation)){$override=$true}
+If (!($ShareUsername)){$ShareUsername = 'AzureStack'}
+If (!($SharePassword)){$SharePassword = 'AzureStack'}
+If (!($NetworkVHDLocation)){$VHDLocation = '\\172.16.5.9\AzureStack\DeployAzureStack\MASImage'}
+If (!($CustomGitBranch)){$CustomGitBranch='master'}
+If (!($CustomGitLocation)){$CustomGitLocation='RZomerman/ASDK'}
 
 #If DellHost it will download OpenManage
 $DellHost = $false
 
 #If specified, it will go to the network share to download the Cloudbuilder.vhdx..
 #Username and password for network
-$DVM_USERNAME = 'AzureStack'
-$DVM_PASSWORD = 'AzureStack'
-$ShareRoot = "\\172.16.5.9\AzureStack"
-$sourceVHDFolder="\DeployAzureStack\MASImage"
-$ADSKPassword="MySuperSecretPasswordAT@123"
 $version="201806109"
 
 ## START SCRIPT
@@ -105,13 +126,25 @@ try
  $Info=ComputerInfo
  $HostManufacturer=$Info.Manufacturer
  $HostModel=$Info.Model
+ $DecomposedShare=$VHDLocation.split("\")
+ $ShareRoot = ("\\" + $DecomposedShare[2] + "\" + $DecomposedShare[3])
+ $sourceVHDFolder=$VHDLocation.Replace($ShareRoot,"")
+
+ If ($sourceVHDFolder.Substring($sourceVHDFolder.Length -1) -eq "\") {
+    $sourceVHDFolder=$sourceVHDFolder.Substring(0,$sourceVHDFolder.Length-1)
+ }
 
  Write-LogMessage -Message "Preparing Azure Stack POC Deployment at $winPEStartTime"
  Write-LogMessage -Message "Script version: $ScriptVersion"
  Write-LogMessage -Message "Running on a $HostModel"
  Write-LogMessage -Message "Made by $HostManufacturer"
- Write-LogMessage -Message "Initialize ASDK Script"
  
+ #If password is still set to NULL 
+    If (!($ADSKPassword)) {
+        Write-AlertMessage -Message "Please specify a password to use"
+        $ADSKPassword = Read-Host
+    }
+ Write-LogMessage -Message "Initializing ASDK Script"
  
  If ($HostManufacturer -match "Dell"){
      $DellHost = $true
@@ -182,8 +215,8 @@ Write-LogMessage -Message "Configure boot and storage Disks."
                  $networkSource=$false
              }
          }else{
-             $secureDVMPassword = ConvertTo-SecureString -String $DVM_PASSWORD -AsPlainText -Force
-             $Credential = New-Object PSCredential -ArgumentList $DVM_USERNAME, $secureDVMPassword
+             $secureDVMPassword = ConvertTo-SecureString -String $SharePassword -AsPlainText -Force
+             $Credential = New-Object PSCredential -ArgumentList $ShareUsername, $secureDVMPassword
          }
          #End of override for automated deployments
 
@@ -250,7 +283,7 @@ Write-LogMessage -Message "Configure boot and storage Disks."
  $Target=$TargetDrive + "\CloudBuilder.vhdx"
 
  Write-LogMessage -Message "Downloading support scripts and applications"
- $DownloadResult = DownloadScripts -SystemDrive $TargetDrive -DellHost $DellHost -DISMUpdate $DISMUpdate
+ $DownloadResult = DownloadScripts -SystemDrive $TargetDrive -DellHost $DellHost -DISMUpdate $DISMUpdate -CustomGitLocation $CustomGitLocation -CustomGitBranch $CustomGitBranch
  If ($DownloadResult) {
      #Write-LogMessage -Message "Download complete"
  }

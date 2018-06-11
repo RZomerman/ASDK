@@ -40,6 +40,18 @@ Add-Type @"
 [ServerCertificateValidationCallback]::Ignore();
 #>
 
+[cmdletbinding()]
+    param (
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitLocation,
+
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitBranch
+    )
+
+If (!($CustomGitBranch)){$CustomGitBranch='master'}
+If (!($CustomGitLocation)){$CustomGitLocation='RZomerman/ASDK'}
+
 Function Get-FileContents {
     Param(
     [string]$file
@@ -133,7 +145,8 @@ $ScriptVersion=Get-FileContents 'x:\PrepareAzureStackPOC.ps1'
         Write-Host "No Internet connection available. Using local script"
     return $false
     }elseIf ($Connection) {
-        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.ps1'
+        $GitHubLocation=('https://raw.githubusercontent.com/' + $CustomGitLocation + '/' + $CustomGitBranch + '/')
+        $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.ps1')
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         $DownloadedFile=Get-FileContents $outfile
@@ -149,8 +162,7 @@ $ScriptVersion=Get-FileContents 'x:\PrepareAzureStackPOC.ps1'
         Write-host "local file is version" $Localversion
         If ($version -gt $Localversion) {
             Write-host "Newer version found online, downloading updated support scripts...."
-            
-            $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.psm1'
+            $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.psm1')
             $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
             DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
 
@@ -165,4 +177,4 @@ $ScriptVersion=Get-FileContents 'x:\PrepareAzureStackPOC.ps1'
             Write-host "local version is newer"
         }
     }
-    . x:\PrepareAzureStackPOC.ps1
+

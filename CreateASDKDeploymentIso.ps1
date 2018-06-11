@@ -11,6 +11,25 @@
         Note
             About 500Mb free space required (is not checked)
 
+    .PARAMETER ASDKPassword
+        The password to be used for the deployment
+
+    .PARAMETER NetworkVHDLocation (optional)
+        The network location where the scripts can find the cloudbuilder.vhdx
+
+    .PARAMETER ShareUsername (optional)
+        The username for a network share (if specified)
+
+    .PARAMETER SharePassword (optional)
+        The password for the username to access the share
+
+    .PARAMETER CustomGitBranch
+        If not using the master branch, can allocate another branch
+        master, development, etc
+    
+    .PARAMETER CustomGitLocation
+        To use your own GitHub Repository (Name/Repo)
+       
     .EXAMPLE
         CreateASDKDeploymentIso.ps1 -TargetDirectory d:\winpe_asdk
 
@@ -22,16 +41,41 @@
 [cmdletbinding()]
     param (
         [string]$TargetDirectory,
-        
+
+        [parameter(Mandatory = $true)]
+        [string]$ASDKPassword,
+
         [parameter(Mandatory = $false)]
-        [string]$CustomGitLocation
+        [string]$ShareUsername,
+
+        [parameter(Mandatory = $false)]
+        [string]$SharePassword,
+
+        [parameter(Mandatory = $false)]
+        [string]$NetworkVHDLocation,
+
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitLocation,
+
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitBranch
     )
 
 #$TargetDirectory='d:\winpe_amd81'
-$version="201806108"
+$version="201806111"
 
 $TargetBatchFile=($env:TEMP + '\PreparewinPE.bat')
 $ClosingISOBatchFile=($env:TEMP + '\PrepareISO.bat')
+
+
+If (($NetworkVHDLocation) -and ((!($SharePassword) -or (!($ShareUsername))))) {
+    Write-host "Please provide all parameters"
+    exit
+}
+
+If (!($CustomGitBranch)){$CustomGitBranch='master'}
+If (!($CustomGitLocation)){$CustomGitLocation='RZomerman/ASDK'}
+
 function Write-LogMessage {
     [cmdletbinding()]
       param
@@ -124,11 +168,9 @@ function DownloadWithRetry{
 }
 
 
-
 Write-Host "      *******************************" -foregroundColor Yellow
 write-host "        Welcome to the ASDK BUILDER " -foregroundColor Yellow
 Write-Host "      *******************************" -foregroundColor Yellow
-write-host ""
 Write-LogMessage -Message "Validating if a newer version is available."
 
     $localversion=$version
@@ -244,13 +286,60 @@ If ($TargetDirectory.Contains(" ")) {
 }
 
 #Setting Github user location
-If ($CustomGitLocation){
-    #custom location should be in the form of: RZomerman/ASDK
-    $GitHubLocation=('https://raw.githubusercontent.com/' + $CustomGitLocation + '/master/')
-    Write-LogMessage -Message "Using Custom GitHub source $CustomGitLocation"
-}Else{
-    $GitHubLocation=('https://raw.githubusercontent.com/RZomerman/ASDK/master/')
+$GitHubLocation=('https://raw.githubusercontent.com/' + $CustomGitLocation + '/' + $CustomGitBranch + '/')
+
+
+#Need to copy all the required files from github to temp
+Write-LogMessage -Message "Downloading scripts from GitHub"  
+Write-LogMessage -Message " - reposi: $CustomGitLocation"
+Write-LogMessage -Message " - branch: $CustomGitBranch"
+$Uri = ($GitHubLocation + 'Start.ps1')
+#write-host $uri
+$OutFile  = ($env:TEMP + '\' + 'Start.ps1')
+DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
+
+$Uri = ($GitHubLocation + 'PrepareAzureStackPOC.psm1')
+#write-host $uri
+$OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
+DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
+
+
+$Uri = ($GitHubLocation + 'PrepareAzureStackPOC.ps1')
+#write-host $uri
+$OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')
+DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
+
+
+$Uri = ($GitHubLocation + 'winpe.jpg')
+#write-host $uri
+$OutFile  = ($env:TEMP + '\' + 'winpe.jpg')
+DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
+
+
+#Customize the ps1 if optional attributes are found
+$BaseCommand='    . x:\PrepareAzureStackPOC.ps1'
+If ($ShareUsername) {               
+    $NewCommand=($NewCommand + " -ShareUserName " + $ShareUsername)
 }
+If ($SharePassword) {               
+    $NewCommand=($NewCommand + " -SharePassword " + $SharePassword)
+}
+If ($NetworkVHDLocation){
+    $NewCommand=($NewCommand + " -NetworkVHDLocation " + $NetworkVHDLocation)
+}
+If ($ASDKPassword){
+    $NewCommand=($NewCommand + " -ASDKPassword " + $ASDKPassword)
+}
+If ($CustomGitLocation){
+    $NewCommand=($NewCommand + " -CustomGitLocation " + $CustomGitLocation)
+}
+If ($CustomGitBranch){
+    $NewCommand=($NewCommand + " -CustomGitBranch " + $CustomGitBranch)
+}
+write-host ($BaseCommand + $NewCommand)
+Add-Content ($env:TEMP + '\' + 'Start.ps1') ($BaseCommand + $NewCommand)
+
+pause
 
 #Creating a copy of the Deployment Toolkit cmd start script so we can add the copype.cmd to it when starting
     copy-item "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat" $TargetBatchFile 
@@ -313,30 +402,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
     Write-LogMessage -Message "Adding Storage WMI package"
     Start-Process 'DISM' -wait -ArgumentList $7
 
-#Need to copy all the required files from github to temp
-    Write-LogMessage -Message "Downloading scripts from GitHub"  
-        $Uri = ($GitHubLocation + 'Start.ps1')
-        #write-host $uri
-        $OutFile  = ($env:TEMP + '\' + 'Start.ps1')
-        DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-        
-        $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.psm1')
-        #write-host $uri
-        $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
-        DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-        
 
-        $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.ps1')
-        #write-host $uri
-        $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')
-        DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-        
-
-        $Uri = ($GitHubLocation + 'winpe.jpg')
-        #write-host $uri
-        $OutFile  = ($env:TEMP + '\' + 'winpe.jpg')
-        DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
-        
 
 #Copy the files to the mounted image
     If (test-path ($TargetDirectory + "\mount\Windows")) {
@@ -344,19 +410,19 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
         If (test-path ($env:TEMP + '\' + 'Start.ps1')) {
             $target=($TargetDirectory + '\mount\Start.ps1')
             write-host "." -NoNewline
-            Copy-Item ($env:TEMP + '\' + 'Start.ps1') $target -Force
+            Copy-Item ($env:TEMP + '\' + 'Start-new.ps1') $target -Force
         }
 
         If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
-                $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.ps1')
+            $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.ps1')
                 write-host "." -NoNewline
                 Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1') $target -Force
             }
-            If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')) {
-                $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.psm1')
-                write-host "." -NoNewline
-                Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1') $target -Force
-            }
+        If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')) {
+            $target=($TargetDirectory + '\mount\PrepareAzureStackPOC.psm1')
+            write-host "." -NoNewline
+            Copy-Item ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1') $target -Force
+        }
     #need to take ownership of WinPE and delete it (to change background later on)
     write-host "" | Out-Null
     Write-LogMessage -Message "Taking ownership of background image"
@@ -391,7 +457,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
     #Closing the mount and making an ISO out of it.....
         $DISM=('/unmount-image /mountdir:' + $TargetDirectory + '\mount /commit')
         Write-LogMessage -Message "Unmounting the image"
-        Start-process 'Dism' -ArgumentList $DISM -Wait -WindowStyle Minimized
+#        Start-process 'Dism' -ArgumentList $DISM -Wait -WindowStyle Minimized
         
         $ISO=('MakeWinPEMedia /ISO ' + $TargetDirectory + ' ' + $TargetDirectory + '\WinPE_ASDK_Stack.iso')
         If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat") {
@@ -405,7 +471,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
             If (test-path $MonitorredFile) {
                 Write-LogMessage "ISO is already present.."
             } Else {        
-                Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs -WindowStyle Minimized
+#                Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $ClosingISOBatchFile" -Verb runAs -WindowStyle Minimized
             }
     }
 
