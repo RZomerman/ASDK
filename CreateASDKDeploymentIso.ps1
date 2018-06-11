@@ -332,14 +332,14 @@ If ($ASDKPassword){
 }
 If ($CustomGitLocation){
     $NewCommand=($NewCommand + " -CustomGitLocation " + $CustomGitLocation)
+    $NewStartCommand=($NewStartCommand + " -CustomGitLocation " + $CustomGitLocation)
 }
 If ($CustomGitBranch){
     $NewCommand=($NewCommand + " -CustomGitBranch " + $CustomGitBranch)
+    $NewStartCommand=($NewStartCommand + " -CustomGitBranch " + $CustomGitBranch)
 }
-write-host ($BaseCommand + $NewCommand)
+Write-Verbose ($BaseCommand + $NewCommand)
 Add-Content ($env:TEMP + '\' + 'Start.ps1') ($BaseCommand + $NewCommand)
-
-pause
 
 #Creating a copy of the Deployment Toolkit cmd start script so we can add the copype.cmd to it when starting
     copy-item "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat" $TargetBatchFile 
@@ -410,7 +410,7 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
         If (test-path ($env:TEMP + '\' + 'Start.ps1')) {
             $target=($TargetDirectory + '\mount\Start.ps1')
             write-host "." -NoNewline
-            Copy-Item ($env:TEMP + '\' + 'Start-new.ps1') $target -Force
+            Copy-Item ($env:TEMP + '\' + 'Start.ps1') $target -Force
         }
 
         If (test-path ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')) {
@@ -446,10 +446,13 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
 
     #Setting the autostart to run powershell start.ps1 script
     Write-LogMessage -Message "Setting the autostart scripts"
+
+        $StartCommand="powershell -NoExit -c X:\Start.ps1"
+        $StartCommand=($StartCommand + $NewStartCommand)
         $startnet = Get-Content ($TargetDirectory + '\mount\windows\system32\startnet.cmd')
         $startnet += "`r`npowershell -c Set-ExecutionPolicy Unrestricted -Force"
         $startnet += "`r`ncd\"
-        $startnet += "`r`npowershell -NoExit -c X:\Start.ps1"
+        $startnet += "`r`n$StartCommand"
         #$startnet
         Set-Content -Value $startnet -Path ($TargetDirectory +  "\mount\windows\system32\startnet.cmd") -Force
     }

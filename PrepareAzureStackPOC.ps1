@@ -80,7 +80,7 @@ If ADSKUnattend.xml does not exist, this script will create one, with default P@
 If (!($NetworkVHDLocation)){$override=$true}
 If (!($ShareUsername)){$ShareUsername = 'AzureStack'}
 If (!($SharePassword)){$SharePassword = 'AzureStack'}
-If (!($NetworkVHDLocation)){$VHDLocation = '\\172.16.5.9\AzureStack\DeployAzureStack\MASImage'}
+If (!($NetworkVHDLocation)){$NetworkVHDLocation = '\\172.16.5.9\AzureStack\DeployAzureStack\MASImage'}
 If (!($CustomGitBranch)){$CustomGitBranch='master'}
 If (!($CustomGitLocation)){$CustomGitLocation='RZomerman/ASDK'}
 
@@ -126,9 +126,9 @@ try
  $Info=ComputerInfo
  $HostManufacturer=$Info.Manufacturer
  $HostModel=$Info.Model
- $DecomposedShare=$VHDLocation.split("\")
+ $DecomposedShare=$NetworkVHDLocation.split("\")
  $ShareRoot = ("\\" + $DecomposedShare[2] + "\" + $DecomposedShare[3])
- $sourceVHDFolder=$VHDLocation.Replace($ShareRoot,"")
+ $sourceVHDFolder=$NetworkVHDLocation.Replace($ShareRoot,"")
 
  If ($sourceVHDFolder.Substring($sourceVHDFolder.Length -1) -eq "\") {
     $sourceVHDFolder=$sourceVHDFolder.Substring(0,$sourceVHDFolder.Length-1)
