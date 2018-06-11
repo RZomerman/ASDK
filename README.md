@@ -32,9 +32,27 @@ CreateASDKDeploymentISO.ps1
 
     
 
-    example:
-            CreateASDKDeploymentISO.ps1 -ASDKPassword MYPAssword -TargetDirectory c:\test2 -ShareUsername AzureStack -SharePassword
-                AzureStack -NetworkVHDLocation \\172.16.5.9\azurestack\DeployAzureStack\MASImage -CustomGitBranch development -CustomGitLocation RZomerman/ASDK
+Examples:
+    Create a simple ISO to boot from, which will 
+        - ask for the password to be used
+        - uses a local USB with cloudbuilder.vhdx as the source OR
+            - ask for a network location IF USB does not contain cloudbuilder.vhdx
+            - ask for network location credentials (if network is used)
+        - clears all disks
+        - deploys cloudbuilder.vhdx and prepare
+        - automatically deploys AzureStackDevelopmentKit
+
+        CreateASDKDeploymentISO.ps1 -TargetDirectory c:\test2
+        
+    Create a bootable ISO that automates the deployment using the predefined password:    
+        CreateASDKDeploymentISO.ps1 -ASDKPassword MYPAssword -TargetDirectory c:\test2 
+
+    Create a bootable ISO that automates the deployment using network source
+        CreateASDKDeploymentISO.ps1 -ASDKPassword MYPAssword -TargetDirectory c:\test2 -ShareUsername AzureStack -SharePassword
+                AzureStack -NetworkVHDLocation \\172.16.5.9\azurestack\DeployAzureStack\MASImage
+         
+    Create a bootable ISO that uses a custom GitHub repository or branch     
+         CreateASDKDeploymentISO.ps1 -CustomGitBranch development -CustomGitLocation RZomerman/ASDK
         
 
         Important:
