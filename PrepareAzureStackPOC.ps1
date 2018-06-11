@@ -135,7 +135,7 @@ try
  }
 
  Write-LogMessage -Message "Preparing Azure Stack POC Deployment at $winPEStartTime"
- Write-LogMessage -Message "Script version: $ScriptVersion"
+ Write-LogMessage -Message "Script version: $version"
  Write-LogMessage -Message "Running on a $HostModel"
  Write-LogMessage -Message "Made by $HostManufacturer"
  
@@ -232,9 +232,11 @@ Write-LogMessage -Message "Configure boot and storage Disks."
                      }
                  #validating if customization files are present
                  If (test-path ($DriveLetter + ':' + $sourceVHDFolder + '\ChangeNetworkGA.ps1')) {
+                     write-LogMessage -Message "Custom network activated"
                      $ChangeNetworkGA=($DriveLetter + ':' + $sourceVHDFolder + '\ChangeNetworkGA.ps1')
                  }
                  If (test-path ($DriveLetter + ':' + $sourceVHDFolder + '\customization.xml')) {
+                     write-LogMessage -Message "Customization activated"
                      $CustomDeployment=($DriveLetter + ':' + $sourceVHDFolder + '\customization.xml')
                  }
 
