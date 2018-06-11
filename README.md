@@ -30,6 +30,7 @@ CreateASDKDeploymentISO.ps1
             
                     CreateASDKDeploymentISO.ps1 -NetworkVHDLocation <UNCPath> -ShareUsername <user> -SharePassword <password>
 
+    !Warning! If a password is specified, it will be stored in clear text inside the ISO image (x:\windows\system32\startnet.cmd)
     
 
 Examples:
@@ -69,6 +70,9 @@ Start.ps1
 
         CustomGitBranch - use a custom GITHUB branch : 
             CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitBranch development
+    
+    !Warning! If a password or SharePassword is specified, it will be stored in clear text inside the ISO image (x:\start.ps1)
+
 
 PrepareAzureStackPOC.ps1 / psm1
     This script will prepare the server for ASDK. It can run in multiple modes, which are described later. The script will !DELETE ALL DATA ON ALL DRIVES! and          therefore NEVER run the script on anything else than your ASDK host. (there are some failsaves built-in, but the warning stands). After preparing the drives 
@@ -84,10 +88,14 @@ PrepareAzureStackPOC.ps1 / psm1
                 (this might take a while)
             - The version for winPE is in the works
             If download is selected and a local USB is present, the downloaded/unpacked cloudbuilder.vhdx will be copied onto the USB if there is enough room
+    
+    !Warning! The Password for the ASDKServer will be stored in clear text inside the PrepareInstallation.ps1 and Unattend.xml file (These are stored on D:\Sources and C:\ respectively)
+                
 
 PrepareInstallation.ps1
     After the WinPE part of the deployment is completed, the server will be rebooted in the ASDK vhdx. After the initial boot, the PrepareInstallation.ps1 is started
     This script will install the supporting bits (like OpenManage, Visual Studio Code... ) as well as prepare the host by disabling Windows Update, enabling high-power scheme and other items.
     If a custom installation document is found, the ASDK deployment will follow the customizations in the JSON file. 
+
 
 This PowerShell script to automated the deployment of [Azure Stack Development Kit (ASDK)](https://docs.microsoft.com/en-us/azure/azure-stack/asdk/asdk-what-is)
