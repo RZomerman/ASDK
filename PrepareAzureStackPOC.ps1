@@ -75,6 +75,12 @@ If ADSKUnattend.xml does not exist, this script will create one, with default P@
         [string]$CustomGitBranch
     )
 
+# Define Regex for Password Complexity - needs to be at least 12 characters, with at least 1 upper case, 1 lower case, 1 number and 1 special character
+$regex = @"
+(?=^.{12,123}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+"@
+
+
 #If speficied as true, it will ask the user to override the network settings - set to true if parameters are given
 #Setting the default variables if none are given
 If (!($NetworkVHDLocation)){$override=$true}
@@ -89,7 +95,7 @@ $DellHost = $false
 
 #If specified, it will go to the network share to download the Cloudbuilder.vhdx..
 #Username and password for network
-$version="201806114"
+$version="201806116"
 
 ## START SCRIPT
 $NETWORK_WAIT_TIMEOUT_SECONDS = 120
@@ -143,6 +149,35 @@ try
     If (!($ASDKPassword)) {
         Write-AlertMessage -Message "Please specify a password to use"
         $ASDKPassword = Read-Host
+        #If a password was entered, validating the complexity (ASDK will halt install if not)
+        if ($ASDKPassword -cmatch $regex -eq $true) {
+            Write-LogMessage -Message "Password complexity Validated" 
+            # Convert plain text password to a secure string
+        }elseif ($ASDKPassword -cmatch $regex -eq $false) {
+            Write-LogMessage -Message "The password doesn't meet complexity requirements,"
+            Write-LogMessage -Message "it needs to be at least 12 characters in length."
+            Write-LogMessage -Message "Your password should also have at least 3 of the following 4 options"
+            Write-LogMessage -Message "1 upper case, 1 lower case, 1 number, 1 special character."
+            # Obtain new password and store as a secure string
+            $secureVMpwd = Read-Host -AsSecureString "Enter a secure ASDK password"
+            $secureVMpwd2 = Read-Host -AsSecureString "Confirm secure ASDK password"
+            # Convert to plain text to test regex complexity
+            $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureVMpwd)            
+            $ASDKPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)  
+
+            $BSTR2 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureVMpwd2)            
+            $ASDKPasswordValidate = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR2)
+            If ($ASDKPassword -ne $ASDKPasswordValidate)  {
+                Write-LogMessage -Message "Passwords do not match"
+                exit
+            }
+            if ($ASDKPassword -cmatch $regex -eq $true) {
+                Write-LogMessage -Message "Password complexity Validated" 
+            }else{
+                Write-LogMessage -Message "No valid password was entered again. Exiting process..." -ErrorAction Stop 
+                exit
+            }
+        }
     }
  Write-LogMessage -Message "Initializing ASDK Script"
  

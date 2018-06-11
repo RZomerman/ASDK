@@ -1,0 +1,13 @@
+***************************************************************************************************
+Started processing at [06/11/2018 19:00:33].
+***************************************************************************************************
+Preparing Azure Stack POC Deployment at 2018/06/11 19:00:33
+Script version: 201806116
+Running on a MacPro5,1
+Made by Apple Inc.
+Please specify a password to use
+Password complexity Validated
+Initializing ASDK Script
+Configure boot and storage Disks.
+Could not detect SKU level \\DESKTOP-TKK6M5G\root\cimv2:Win32_OperatingSystem=@.OperatingSystemSKU
+Drive erase disabled
