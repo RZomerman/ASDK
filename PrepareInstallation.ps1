@@ -200,6 +200,7 @@ If (test-path D:\sources\AzureStack_Installer\asdk-installer.ps1) {
     write-LogMessage -Message "using DNS $DNSForwarder and timeServer $TimeServer"
     write-LogMessage "Ready to run the installer"
     #.\asdk-installer.ps1
-    .\InstallAzureStackPOC.ps1 -AdminPassword $adminpass -UseADFS -DNSForwarder $DNSForwarder -TimeServer $NTP[1] -RegionName $RegionName -DomainFQDN $DomainFQDN -ExternalDomainSuffix $ExternalDomainSuffix
+    .\InstallAzureStackPOC.ps1 -AdminPassword $adminpass -UseADFS -DNSForwarder $DNSForwarder -TimeServer $TimeServer 
+    #.\InstallAzureStackPOC.ps1 -AdminPassword $adminpass -UseADFS -DNSForwarder $DNSForwarder -TimeServer $TimeServer -RegionName $RegionName -DomainFQDN $DomainFQDN -ExternalDomainSuffix $ExternalDomainSuffix
 }
 
