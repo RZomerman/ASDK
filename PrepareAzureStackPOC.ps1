@@ -89,7 +89,7 @@ $DellHost = $false
 
 #If specified, it will go to the network share to download the Cloudbuilder.vhdx..
 #Username and password for network
-$version="201806113"
+$version="201806114"
 
 ## START SCRIPT
 $NETWORK_WAIT_TIMEOUT_SECONDS = 120
@@ -230,6 +230,14 @@ Write-LogMessage -Message "Configure boot and storage Disks."
                  }else{
                      New-PSDrive -Name $DriveLetter -PSProvider FileSystem -Root $ShareRoot -Credential $Credential -Persist -Scope Global
                      }
+                 #validating if customization files are present
+                 If (test-path ($DriveLetter + ':' + $sourceVHDFolder + '\ChangeNetworkGA.ps1')) {
+                     $ChangeNetworkGA=($DriveLetter + ':' + $sourceVHDFolder + '\ChangeNetworkGA.ps1')
+                 }
+                 If (test-path ($DriveLetter + ':' + $sourceVHDFolder + '\customization.xml')) {
+                     $CustomDeployment=($DriveLetter + ':' + $sourceVHDFolder + '\customization.xml')
+                 }
+
                  If (test-path ($DriveLetter + ':' + $sourceVHDFolder + '\CloudBuilder.vhdx')) {
                      $sourceVHDLocation = ($ShareRoot + $sourceVHDFolder + '\CloudBuilder.vhdx')
                      write-LogMessage -Message ("Using: " + $sourceVHDLocation)
@@ -322,13 +330,13 @@ Write-LogMessage -Message "Configure boot and storage Disks."
      Write-LogMessage -Message "Copying support files"
      $TargetForChangeNetwork=($TargetDrive + "\sources\ChangeNetworkGA.ps1")
      $TargetForCustomDeployment = ($TargetDrive + "\sources\customization.xml")
-     If (test-path $changeNetworkGA) {
+     If ($changeNetworkGA) {
          If (!(test-path ($TargetDrive + "\sources"))) {
               New-Item ($TargetDrive + "\sources") -Type directory | Out-Null
          }
          copy-file -from $ChangeNetworkGA -to $TargetForChangeNetwork -force
      }
-     If (test-path $CustomDeployment) {
+     If ($CustomDeployment) {
         If (!(test-path ($TargetDrive + "\sources"))) {
             New-Item ($TargetDrive + "\sources") -Type directory | Out-Null
         }
