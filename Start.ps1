@@ -40,6 +40,33 @@ Add-Type @"
 [ServerCertificateValidationCallback]::Ignore();
 #>
 
+[cmdletbinding()]
+    param (
+        [parameter(Mandatory = $false)]
+        [boolean]$ForceRun,
+
+        [parameter(Mandatory = $false)]
+        [string]$ASDKPassword,
+
+        [parameter(Mandatory = $false)]
+        [string]$ShareUsername,
+
+        [parameter(Mandatory = $false)]
+        [string]$SharePassword,
+
+        [parameter(Mandatory = $false)]
+        [string]$NetworkVHDLocation,
+
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitLocation,
+
+        [parameter(Mandatory = $false)]
+        [string]$CustomGitBranch
+    )
+
+If (!($CustomGitBranch)){$CustomGitBranch='master'}
+If (!($CustomGitLocation)){$CustomGitLocation='RZomerman/ASDK'}
+
 Function Get-FileContents {
     Param(
     [string]$file
@@ -101,8 +128,6 @@ function DownloadWithRetry
         }
     }
 }
-
-
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $winPEStartTime = (Get-Date).ToString('yyyy/MM/dd HH:mm:ss')
 #$ScriptVersion=(Get-Item x:\PrepareAzureStackPOC.ps1).LastWriteTime
@@ -133,7 +158,8 @@ $ScriptVersion=Get-FileContents 'x:\PrepareAzureStackPOC.ps1'
         Write-Host "No Internet connection available. Using local script"
     return $false
     }elseIf ($Connection) {
-        $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.ps1'
+        $GitHubLocation=('https://raw.githubusercontent.com/' + $CustomGitLocation + '/' + $CustomGitBranch + '/')
+        $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.ps1')
         $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.ps1')
         DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
         $DownloadedFile=Get-FileContents $outfile
@@ -149,8 +175,7 @@ $ScriptVersion=Get-FileContents 'x:\PrepareAzureStackPOC.ps1'
         Write-host "local file is version" $Localversion
         If ($version -gt $Localversion) {
             Write-host "Newer version found online, downloading updated support scripts...."
-            
-            $Uri = 'https://raw.githubusercontent.com/RZomerman/ASDK/master/PrepareAzureStackPOC.psm1'
+            $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.psm1')
             $OutFile  = ($env:TEMP + '\' + 'PrepareAzureStackPOC.psm1')
             DownloadWithRetry -url $uri -downloadLocation $outfile -retries 3
 
@@ -165,4 +190,35 @@ $ScriptVersion=Get-FileContents 'x:\PrepareAzureStackPOC.ps1'
             Write-host "local version is newer"
         }
     }
-    . x:\PrepareAzureStackPOC.ps1
+#Manual deployment straight from start
+    If ($ForceRun){
+        $BaseCommand='x:\PrepareAzureStackPOC.ps1'
+        If ($ShareUsername) {               
+            $NewCommand=($NewCommand + " -ShareUserName " + $ShareUsername)
+        }
+        If ($SharePassword) {               
+            $NewCommand=($NewCommand + " -SharePassword " + $SharePassword)
+        }
+        If ($NetworkVHDLocation){
+            $NewCommand=($NewCommand + " -NetworkVHDLocation " + $NetworkVHDLocation)
+        }
+        If ($ASDKPassword){
+            $NewCommand=($NewCommand + " -ASDKPassword " + $ASDKPassword)
+        }
+        If ($CustomGitLocation){
+            $NewCommand=($NewCommand + " -CustomGitLocation " + $CustomGitLocation)
+            $NewStartCommand=($NewStartCommand + " -CustomGitLocation " + $CustomGitLocation)
+        }
+        If ($CustomGitBranch){
+            $NewCommand=($NewCommand + " -CustomGitBranch " + $CustomGitBranch)
+            $NewStartCommand=($NewStartCommand + " -CustomGitBranch " + $CustomGitBranch)
+        }
+        $Command=($BaseCommand + $NewCommand)
+        Write-Verbose $Command
+        Invoke-Expression "& `"$BaseCommand`" $NewCommand"
+    
+        Exit
+    }
+#Automated deployment will be added below
+
+
