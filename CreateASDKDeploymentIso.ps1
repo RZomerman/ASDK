@@ -62,7 +62,7 @@
     )
 
 #$TargetDirectory='d:\winpe_amd81'
-$version="201806112"
+$version="201806131"
 
 
 # Define Regex for Password Complexity - needs to be at least 12 characters, with at least 1 upper case, 1 lower case, 1 number and 1 special character
