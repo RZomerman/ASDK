@@ -195,12 +195,12 @@ Else {
 #Starting the deployment
 If (test-path D:\sources\AzureStack_Installer\asdk-installer.ps1) {
     $adminpass = ConvertTo-SecureString $Password -AsPlainText -Force
-    cd C:\CloudDeployment\Setup
-    #cd D:\sources\AzureStack_Installer
+    #cd C:\CloudDeployment\Setup
+    cd D:\sources\AzureStack_Installer
     write-LogMessage -Message "using DNS $DNSForwarder and timeServer $TimeServer"
     write-LogMessage "Ready to run the installer"
-    #.\asdk-installer.ps1
-    .\InstallAzureStackPOC.ps1 -AdminPassword $adminpass -UseADFS -DNSForwarder $DNSForwarder -TimeServer $TimeServer 
+    .\asdk-installer.ps1
+    #.\InstallAzureStackPOC.ps1 -AdminPassword $adminpass -UseADFS -DNSForwarder $DNSForwarder -TimeServer $TimeServer 
     #.\InstallAzureStackPOC.ps1 -AdminPassword $adminpass -UseADFS -DNSForwarder $DNSForwarder -TimeServer $TimeServer -RegionName $RegionName -DomainFQDN $DomainFQDN -ExternalDomainSuffix $ExternalDomainSuffix
 }
 
