@@ -132,6 +132,13 @@ Function Get-FileContents {
         return $serverarray
     }
 }
+Function IsDISMStillRunning {
+    #This function validates if the DISM process is still running... and halts the script until it is
+    While (Get-Process | where-object {$_.ProcessName -Contains "Dism"}) {
+        write-host "." -NoNewline
+        start-sleep -s 2
+    } 
+}
 
 function DownloadWithRetry{
     [CmdletBinding()]
@@ -423,32 +430,43 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
     $5=('/Image:' + $TargetDirectory + '\mount /Add-Package /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-PowerShell.cab"')
     $6=('/Image:' + $TargetDirectory + '\mount /Add-Package /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-DismCmdlets.cab"')
     $7=('/Image:' + $TargetDirectory + '\mount /Add-Package /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-StorageWMI.cab"') 
+    
+#Mounting the image
     Write-LogMessage -Message "Mounting the WinPE image" -NoNewline $true
-    Start-Process 'DISM' -ArgumentList $1 
+    Start-Process 'DISM' -ArgumentList $1 -WindowStyle Minimized
 
 #Need to check if c:\windows\system32\dism.exe is still running
-    While (Get-Process | where-object {$_.ProcessName -Contains "Dism"}) {
-        write-host "." -NoNewline
-        start-sleep -s 2
-    }    
+IsDISMStillRunning
     write-host ""
-    Write-LogMessage -Message "Adding WMI package"
-    Start-Process 'DISM' -wait -ArgumentList $2 
-    Write-LogMessage -Message "Adding Network package"
-    Start-Process 'DISM' -wait -ArgumentList $3 
-    Write-LogMessage -Message "Adding Scriptig package"
-    Start-Process 'DISM' -wait -ArgumentList $4 
-    Write-LogMessage -Message "Adding Powershell package"
-    Start-Process 'DISM' -wait -ArgumentList $5 
-    Write-LogMessage -Message "Adding DISM package"
-    Start-Process 'DISM' -wait -ArgumentList $6 
-    Write-LogMessage -Message "Adding Storage WMI package"
-    Start-Process 'DISM' -wait -ArgumentList $7
+    Write-LogMessage -Message "Adding WMI package" -NoNewline $true
+    Start-Process 'DISM'  -ArgumentList $2 -WindowStyle Minimized
+IsDISMStillRunning
+    write-host ""
+    Write-LogMessage -Message "Adding Network package" -NoNewline $true
+    Start-Process 'DISM'-ArgumentList $3 -WindowStyle Minimized
+IsDISMStillRunning
+    write-host ""
+    Write-LogMessage -Message "Adding Scriptig package" -NoNewline $true
+    Start-Process 'DISM'-ArgumentList $4 -WindowStyle Minimized
+IsDISMStillRunning
+    write-host ""
+    Write-LogMessage -Message "Adding Powershell package" -NoNewline $true
+    Start-Process 'DISM'-ArgumentList $5 -WindowStyle Minimized
+IsDISMStillRunning
+    write-host ""
+    Write-LogMessage -Message "Adding DISM package" -NoNewline $true
+    Start-Process 'DISM'  -ArgumentList $6 -WindowStyle Minimized
+IsDISMStillRunning
+    write-host ""
+    Write-LogMessage -Message "Adding Storage WMI package" -NoNewline $true
+    Start-Process 'DISM' -ArgumentList $7 -WindowStyle Minimized
+IsDISMStillRunning
 
 
 
 #Copy the files to the mounted image
     If (test-path ($TargetDirectory + "\mount\Windows")) {
+        write-host ""
         Write-LogMessage -Message "Copying files to the mounted image" -NoNewLine $true
         If (test-path ($env:TEMP + '\' + 'Start.ps1')) {
             $target=($TargetDirectory + '\mount\Start.ps1')
@@ -502,8 +520,10 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
 
     #Closing the mount and making an ISO out of it.....
         $DISM=('/unmount-image /mountdir:' + $TargetDirectory + '\mount /commit')
-        Write-LogMessage -Message "Unmounting the image"
-        Start-process 'Dism' -ArgumentList $DISM -Wait -WindowStyle Minimized
+        write-host ""
+        Write-LogMessage -Message "Unmounting the image" -NoNewline $true
+        Start-process 'Dism' -ArgumentList $DISM -WindowStyle Minimized
+    IsDISMStillRunning
         
         $ISO=('MakeWinPEMedia /ISO ' + $TargetDirectory + ' ' + $TargetDirectory + '\WinPE_ASDK_Stack.iso')
         If (test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat") {
