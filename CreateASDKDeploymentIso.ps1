@@ -532,6 +532,7 @@ IsDISMStillRunning
                 $ISOfile += "`r`nREM Creating ISO"
                 $ISOfile += "`r`n$ISO"
                 Set-Content -Value $ISOfile -Path $ClosingISOBatchFile -Force
+            write-host ""
             Write-LogMessage -Message "Creating the ISO image"
             $MonitorredFile=($TargetDirectory + '\WinPE_ASDK_Stack.iso')
             If (test-path $MonitorredFile) {
