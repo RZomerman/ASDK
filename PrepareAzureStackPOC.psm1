@@ -107,9 +107,11 @@ function DiskConfiguration
     (Get-Date).ToString('yyyy/MM/dd HH:mm:ss') 
     Write-LogMessage -Message "Reset the disks and clean them of all data."
     #Must not remove partition from USB drive
-    $ArrayOfDisks=Get-PhysicalDisk | where {$_.BusType -ne "USB"}
+    $ArrayOfDisks=Get-PhysicalDisk | where {$_.BusType -ne "USB" -and $_.OperationalStatus -eq "OK"}
     #$ArrayOfDisks | ft FriendlyName,MediaType,Size
     Foreach ($Disk in $ArrayOfDisks) {
+        $DiskPhysicalLocation=$Disk.PhysicalLocation
+        Write-LogMessage -Message "Cleaning disk $DiskPhysicalLocation"
         Get-Partition -DiskNumber $Disk.DeviceID -ErrorAction SilentlyContinue| Remove-Partition -Confirm:$false -ErrorAction SilentlyContinue
     }
     
