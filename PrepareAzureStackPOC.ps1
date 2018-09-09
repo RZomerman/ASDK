@@ -276,7 +276,7 @@ Write-LogMessage -Message "Configure boot and storage Disks."
                  }
 
                  If (test-path ($DriveLetter + ':' + $sourceVHDFolder + '\CloudBuilder.vhdx')) {
-                     $sourceVHDLocation = ($ShareRoot + $sourceVHDFolder + '\CloudBuilder.vhdx')
+                     $sourceVHDLocation = ($DriveLetter + ':' + $sourceVHDFolder + '\CloudBuilder.vhdx')
                      write-LogMessage -Message ("Using: " + $sourceVHDLocation)
                      write-LogMessage -Message "Switching to network mode"
                      $networkSource = $true   
