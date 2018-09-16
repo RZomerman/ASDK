@@ -405,6 +405,8 @@ Add-Content ($env:TEMP + '\' + 'Start.ps1') ($BaseCommand + $NewCommand)
             Start-Process 'C:\WINDOWS\system32\cmd.exe' -argumentlist "/k $TargetBatchFile" -Verb runAs -WindowStyle Minimized
     }else{
         Write-LogMessage -Message "Target Directory already exists"
+        Write-LogMessage -Message "Please make sure to specify a non-existing directory"
+        Exit
 #exit
     }
 
