@@ -1,4 +1,4 @@
-﻿$HostFile = "$Env:SystemRoot\System32\Drivers\Etc\Hosts" 
+$HostFile = "$Env:SystemRoot\System32\Drivers\Etc\Hosts" 
 
 #Findsout if the script is ran from WinPE or dual-boot config
 Function HostIsWinPE{
@@ -182,9 +182,10 @@ function DiskConfiguration
         $espPartition = New-Partition -DiskNumber $bootDiskNumber -Size 200MB -GptType "{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}"  # ESP
         $msrPartition = New-Partition -DiskNumber $bootDiskNumber -Size 128MB -GptType "{e3c9e316-0b5c-4db8-817d-f92df00215ae}" # MSR
         $osPartition = New-Partition -DiskNumber $bootDiskNumber -UseMaximumSize -AssignDriveLetter -GptType "{ebd0a0a2-b9e5-4433-87c0-68b6b72699c7}" # OS
+        Start-Sleep 3 #Required for partioning to finish on older drives
         Write-LogMessage -Message "Formatting partition"
         
-        $OSPartition = Get-Partition -DiskNumber $bootDiskNumber | where {$_.Size -gt 50GB}
+        $OSPartition = Get-Partition -DiskNumber $bootDiskNumber | Where-object {$_.Size -gt 50GB}
         $osVolume = Format-Volume -Partition $osPartition -FileSystem NTFS -Confirm:$false
         
         $espPartition | Add-PartitionAccessPath -AccessPath Q:
@@ -192,7 +193,7 @@ function DiskConfiguration
         $OsDriveLetter = $osPartition.DriveLetter + ':'
         Write-LogMessage -Message "Using $OsDriveLetter as the target drive"
     }
-    sleep 5
+    start-sleep 5
     return $($OsDriveLetter)
 }
 function findUSB{
@@ -684,6 +685,63 @@ Function CreateDiskPartClear {
     Set-Content -Value $DiskpartClear -Path $ClearDiskFilePath
 
 }
+
+function CheckDisks {
+    $physicalDisks = Get-PhysicalDisk | Where-Object { ($_.BusType -eq 'RAID' -or $_.BusType -eq 'SAS' -or $_.BusType -eq 'SATA') -and $_.Size -gt 250Gb }
+    $selectedDisks = $physicalDisks | Group-Object -Property BusType | Sort-Object -Property Count -Descending | Select-Object -First 1
+
+    if ($selectedDisks.Count -ge 3) {
+        $DiskCount=$selectedDisks.Count
+        Write-LogMessage -Message "Found $DiskCount disks that are >250Gb"
+    }
+    if ($selectedDisks.Count -lt 3) {
+        Write-AlertMessage -Message "Not enough disks found for ASDK"
+        Exit-PSHostProcess
+     }    
+}
+
+function CheckRam {
+    $mem = Get-WmiObject -Class Win32_ComputerSystem
+    $totalMemoryInGB = [Math]::Round($mem.TotalPhysicalMemory / 1Gb)
+    $MemoryInGB=([string]$totalMemoryInGB + "GB")
+    if ($totalMemoryInGB -lt 96) {
+        Write-AlertMessage -Message "$MemoryInGB is not enough memory to run ASDK"
+        Exit-PSHostProcess
+    }
+    else
+    {
+       Write-LogMessage -Message "Server has $MemoryInGB of memory installed"
+    }
+}
+
+function CheckHyperVSupport {
+          $cpu = Get-WmiObject -Class WIN32_PROCESSOR
+          $os = Get-WmiObject -Class Win32_OperatingSystem
+          if (($cpu.VirtualizationFirmwareEnabled -contains $false) -or ($cpu.SecondLevelAddressTranslationExtensions -contains $false) -or ($cpu.VMMonitorModeExtensions -contains $false) -or ($os.DataExecutionPrevention_Available -eq $false)) {
+            Write-AlertMessage -Message "CPU does not meet Hyper-V requirements.. "
+         }
+         else
+         {
+            Write-LogMessage -Message "CPU Virtualization is supported and enabled"
+         }
+
+}
+
+function CheckCPU {
+    $CPUCount = (Get-WmiObject -class win32_processor –computername localhost).count
+    $CoreCount =  ((Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores)*$CPUCount
+
+    If ($CoreCount -lt 12){
+    Write-AlertMessage -Message "Not enough cores available in the system"
+    Exit-PSHostProcess
+  }
+  else
+  {
+    Write-LogMessage -Message "Server has $CPUCount CPU's with $CoreCount cores total"
+  }
+}
+
+
 Function CreateUnattend {
 
     [CmdletBinding()]
