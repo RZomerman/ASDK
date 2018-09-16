@@ -95,7 +95,7 @@ $DellHost = $false
 
 #If specified, it will go to the network share to download the Cloudbuilder.vhdx..
 #Username and password for network
-$version="201806116"
+$version="201809161"
 
 ## START SCRIPT
 $NETWORK_WAIT_TIMEOUT_SECONDS = 120
@@ -123,9 +123,16 @@ try
  $ScriptVersion=(Get-Item .\PrepareAzureStackPOC.ps1).LastWriteTime
  Import-Module "$PSScriptRoot\PrepareAzureStackPOC.psm1" -Force
  cls
- Write-Host "      *****************************************" -foregroundColor Yellow
- write-host "        Welcome to the ASDK PREPARATION SCRIPT " -foregroundColor Yellow
- Write-Host "      *****************************************" -foregroundColor Yellow
+ write-host ""
+write-host ""
+write-host "                               _____        __                                " -ForegroundColor Green
+write-host "     /\                       |_   _|      / _|                               " -ForegroundColor Yellow
+write-host "    /  \    _____   _ _ __ ___  | |  _ __ | |_ _ __ __ _   ___ ___  _ __ ___  " -ForegroundColor Red
+write-host "   / /\ \  |_  / | | | '__/ _ \ | | | '_ \|  _| '__/ _' | / __/ _ \| '_ ' _ \ " -ForegroundColor Cyan
+write-host "  / ____ \  / /| |_| | | |  __/_| |_| | | | | | | | (_| || (_| (_) | | | | | |" -ForegroundColor DarkCyan
+write-host " /_/    \_\/___|\__,_|_|  \___|_____|_| |_|_| |_|  \__,_(_)___\___/|_| |_| |_|" -ForegroundColor Magenta
+write-host "                                                                              "
+ write-host "                    Welcome to the ASDK PREPARATION SCRIPT " -foregroundColor Yellow
  write-host ""
 
  $ActiveLog = ActivateLog
@@ -140,15 +147,31 @@ try
     $sourceVHDFolder=$sourceVHDFolder.Substring(0,$sourceVHDFolder.Length-1)
  }
 
- Write-LogMessage -Message "Preparing Azure Stack POC Deployment at $winPEStartTime"
+ Write-LogMessage -Message "Preparing Azure Stack POC Deployment: $winPEStartTime"
  Write-LogMessage -Message "Script version: $version"
- Write-LogMessage -Message "Running on a $HostModel"
- Write-LogMessage -Message "Made by $HostManufacturer"
- 
+ Write-LogMessage -Message "Running on a $HostManufacturer $HostModel "
+#System Validation checks
+    CheckCPU
+    CheckHyperVSupport
+    CheckRam
+    CheckDisks
+
  #If password is still set to NULL 
     If (!($ASDKPassword)) {
         Write-AlertMessage -Message "Please specify a password to use"
-        $ASDKPassword = Read-Host
+        $secureVMpwd = Read-Host -AsSecureString "Enter a secure ASDK password"
+        $secureVMpwd2 = Read-Host -AsSecureString "Confirm secure ASDK password"
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureVMpwd)    
+        $ASDKPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+
+        $BSTR2 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureVMpwd2)            
+        $ASDKPasswordValidate = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR2)
+        If ($ASDKPassword -ne $ASDKPasswordValidate)  {
+            Write-LogMessage -Message "Passwords do not match"
+            Write-LogMessage -Message "Please restart script"
+            exit
+        }
+
         #If a password was entered, validating the complexity (ASDK will halt install if not)
         if ($ASDKPassword -cmatch $regex -eq $true) {
             Write-LogMessage -Message "Password complexity Validated" 
@@ -179,6 +202,7 @@ try
             }
         }
     }
+
  Write-LogMessage -Message "Initializing ASDK Script"
  
  If ($HostManufacturer -match "Dell"){
