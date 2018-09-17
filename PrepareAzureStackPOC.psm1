@@ -728,8 +728,8 @@ function CheckHyperVSupport {
 }
 
 function CheckCPU {
-    $CPUCount = (Get-WmiObject -class win32_processor –computername localhost).count
-    $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
+    $CPUCount = (Get-WmiObject -class win32_processor -ComputerName localhost).count
+    $CoreCount =  (Get-WmiObject -class win32_processor -ComputerName localhost -Property "numberOfCores")[0].numberOfCores
     $TotalCores=$CPUCount * $CoreCount
     Write-LogMessage -Message "Server has $CPUCount CPU's with $TotalCores cores total"
     #If ($CPUCount) {
