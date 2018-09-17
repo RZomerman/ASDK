@@ -729,15 +729,16 @@ function CheckHyperVSupport {
 
 function CheckCPU {
     $CPUCount = (Get-WmiObject -class win32_processor –computername localhost).count
-    $CoreCount =  ((Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores)*$CPUCount
+    $CoreCount =  ((Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores)
+    $TotalCores=$CPUCount * $CoreCount
 
-    If ($CoreCount -lt 12){
+    If ($TotalCores -lt 12){
     Write-AlertMessage -Message "Not enough cores available in the system"
     Exit-PSHostProcess
   }
   else
   {
-    Write-LogMessage -Message "Server has $CPUCount CPU's with $CoreCount cores total"
+    Write-LogMessage -Message "Server has $CPUCount CPU's with $TotalCores cores total"
   }
 }
 
