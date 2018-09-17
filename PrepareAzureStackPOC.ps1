@@ -95,7 +95,7 @@ $DellHost = $false
 
 #If specified, it will go to the network share to download the Cloudbuilder.vhdx..
 #Username and password for network
-$version="201809173"
+$version="201809175"
 
 ## START SCRIPT
 $NETWORK_WAIT_TIMEOUT_SECONDS = 120
