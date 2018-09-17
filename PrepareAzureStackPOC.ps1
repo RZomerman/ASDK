@@ -95,7 +95,7 @@ $DellHost = $false
 
 #If specified, it will go to the network share to download the Cloudbuilder.vhdx..
 #Username and password for network
-$version="201809172"
+$version="201809173"
 
 ## START SCRIPT
 $NETWORK_WAIT_TIMEOUT_SECONDS = 120
@@ -149,7 +149,7 @@ write-host "                                                                    
 
  Write-LogMessage -Message "Preparing Azure Stack POC Deployment: $winPEStartTime"
  Write-LogMessage -Message "Script version: $version"
- Write-LogMessage -Message "Running on a $HostManufacturer $HostModel "
+ Write-LogMessage -Message "Running on a $HostManufacturer $HostModel"
 #System Validation checks
     CheckCPU
     CheckHyperVSupport
@@ -205,7 +205,7 @@ write-host "                                                                    
 
  Write-LogMessage -Message "Initializing ASDK Script"
  
- If ($HostManufacturer -match "Dell"){
+ If ( $HostModel.Contains("T710")){
      $DellHost = $true
      Write-LogMessage -Message "Dell hardware detected - enabled OpenManage Download"
  }
