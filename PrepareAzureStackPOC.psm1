@@ -734,7 +734,7 @@ function CheckCPU {
         $TotalCores=$CPUCount * $CoreCount
 	If ($TotalCores -lt 12){
             Write-AlertMessage -Message "Not enough cores available in the system"
-            Exit-PSHostProcess
+            Write-AlertMessage -Message "continuing with lower specs"
         }
         else
         {
