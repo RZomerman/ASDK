@@ -729,24 +729,27 @@ function CheckHyperVSupport {
 
 function CheckCPU {
     $CPUCount = (Get-WmiObject -class win32_processor –computername localhost).count
-    If ($CPUCount) {
-       $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
-        $TotalCores=$CPUCount * $CoreCount
-	If ($TotalCores -lt 12){
-            Write-AlertMessage -Message "Not enough cores available in the system"
-            Write-AlertMessage -Message "continuing with lower specs"
-        }
-        else
-        {
-            Write-LogMessage -Message "Server has $CPUCount CPU's with $TotalCores cores total"
-        }
-    }
-    else 
-    {
-        $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
-        Write-LogMessage -Message "Server has $CoreCount cores per processor"
-	    Write-LogMessage -Message "Continuing based on assumption of enough cores"
-    }
+    $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
+    $TotalCores=$CPUCount * $CoreCount
+    Write-LogMessage -Message "Server has $CPUCount CPU's with $TotalCores cores total"
+    #If ($CPUCount) {
+    #   $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
+    #    $TotalCores=$CPUCount * $CoreCount
+	#If ($TotalCores -lt 12){
+    #        Write-AlertMessage -Message "Not enough cores available in the system"
+    #        Write-AlertMessage -Message "continuing with lower specs"
+    #    }
+    #    else
+    #    {
+    #        Write-LogMessage -Message "Server has $CPUCount CPU's with $TotalCores cores total"
+    #    }
+    #}
+    #else 
+    #{
+    #    $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
+    #    Write-LogMessage -Message "Server has $CoreCount cores per processor"
+	#    Write-LogMessage -Message "Continuing based on assumption of enough cores"
+    #}
 }
 
 
