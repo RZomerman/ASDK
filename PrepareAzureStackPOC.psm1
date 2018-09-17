@@ -744,7 +744,7 @@ function CheckCPU {
     else{
         $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
         Write-LogMessage -Message "Server has $CoreCount cores per processor"
-	Write-LogMessage -Message "Continuing based on assumption of enough cores
+	Write-LogMessage -Message "Continuing based on assumption of enough cores"
     }
 }
 
