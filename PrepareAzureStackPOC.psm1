@@ -728,28 +728,13 @@ function CheckHyperVSupport {
 }
 
 function CheckCPU {
-    $CPUCount = (Get-WmiObject -class win32_processor -ComputerName localhost).count
-    $CoreCount =  (Get-WmiObject -class win32_processor -ComputerName localhost -Property "numberOfCores")[0].numberOfCores
-    $TotalCores=$CPUCount * $CoreCount
-    Write-LogMessage -Message "Server has $CPUCount CPU's with $TotalCores cores total"
-    #If ($CPUCount) {
-    #   $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
-    #    $TotalCores=$CPUCount * $CoreCount
-	#If ($TotalCores -lt 12){
-    #        Write-AlertMessage -Message "Not enough cores available in the system"
-    #        Write-AlertMessage -Message "continuing with lower specs"
-    #    }
-    #    else
-    #    {
-    #        Write-LogMessage -Message "Server has $CPUCount CPU's with $TotalCores cores total"
-    #    }
-    #}
-    #else 
-    #{
-    #    $CoreCount =  (Get-WmiObject -class win32_processor –computername localhost -Property "numberOfCores")[0].numberOfCores
-    #    Write-LogMessage -Message "Server has $CoreCount cores per processor"
-	#    Write-LogMessage -Message "Continuing based on assumption of enough cores"
-    #}
+    $cs = Get-WmiObject -class Win32_ComputerSystem
+    $Sockets=$cs.numberofprocessors
+    $Cores=$cs.numberoflogicalprocessors
+    Write-LogMessage -Message "System has $Sockets sockets with a total of $cores logical cores"
+    If ($Cores -lt 12) {
+        Write-AlertMessage -Message "Not enough cores in the system"
+    }
 }
 
 
