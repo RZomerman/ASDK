@@ -307,6 +307,7 @@ If (!(test-path "C:\Program Files (x86)\Windows Kits\10\Assessment and Deploymen
             $Installcompleted = $LogfileContents | %{$_ -match "Exit code: 0x0"}
             If ($Installcompleted -contains $true) {
                 #Exit code is 0x0
+                Write-host "" | Out-Null
                 Write-LogMessage -Message "Installation completed"
                 break
             } Else {
@@ -420,8 +421,10 @@ $MonitorredFile=($TargetDirectory + '\Media\zh-tw\bootmgr.efi.mui')
             break
         }
         #sleep for 2 seconds, then check again
-        write-host "sleeping"
+        #write-host "sleeping"
+        Write-host "." -NoNewline
         Start-Sleep -s 2
+        Write-host "" | Out-Null
     }
 
 #Mounting the image and adding the required repositories to it
@@ -522,7 +525,7 @@ IsDISMStillRunning
 
     #Closing the mount and making an ISO out of it.....
         $DISM=('/unmount-image /mountdir:' + $TargetDirectory + '\mount /commit')
-        write-host ""
+        #write-host ""
         Write-LogMessage -Message "Unmounting the image" -NoNewline $true
         Start-process 'Dism' -ArgumentList $DISM -WindowStyle Minimized
     IsDISMStillRunning
