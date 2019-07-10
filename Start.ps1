@@ -156,7 +156,6 @@ $ScriptVersion=Get-FileContents 'x:\PrepareAzureStackPOC.ps1'
     $Connection = test-connection -computername raw.githubusercontent.com -count 1 -quiet
     If (!$Connection) {
         Write-Host "No Internet connection available. Using local script"
-    return $false
     }elseIf ($Connection) {
         $GitHubLocation=('https://raw.githubusercontent.com/' + $CustomGitLocation + '/' + $CustomGitBranch + '/')
         $Uri = ($GitHubLocation + 'PrepareAzureStackPOC.ps1')
