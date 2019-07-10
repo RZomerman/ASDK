@@ -1,9 +1,9 @@
 # Azure Stack Development Kit (ASDK) Installer script
 
-CreateASDKDeploymentISO.ps1
+CreateASDKDeployment.ps1
     
     Run from an Administrative PowerShell: 
-        CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -ASDKPassword <Password>
+        CreateASDKDeployment.ps1 -TargetDirectory <folder to create ISO> -ASDKPassword <Password>
     to create a new ISO deployment file. The <folder to create ISO> should not yet exist. For example c:\winpeISO
     The script will use the Windows ADK to create a new ISO file that contains WindowsPE. During the creation it will download the latest scripts
         from the GitHub repository and place these on the root of WinPE (PrepareAzureStackPOC.ps1 / psm1 and Start.ps1). It will also download
@@ -15,20 +15,20 @@ CreateASDKDeploymentISO.ps1
 
     OPTIONAL PARAMETERS
         CustomGitLocation - to use a custom GITHUB repo : 
-            CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitLocation <username>/Repository
+            CreateASDKDeployment.ps1 -TargetDirectory <folder to create ISO> -CustomGitLocation <username>/Repository
 
         CustomGitBranch - use a custom GITHUB branch : 
-            CreateASDKDeploymentISO.ps1 -TargetDirectory <folder to create ISO> -CustomGitBranch development
+            CreateASDKDeployment.ps1 -TargetDirectory <folder to create ISO> -CustomGitBranch development
 
         ASDKPassword - password will be used for the deployment. If no password is specified, the PrepareAzureStackPOC.ps1 will ask for a password
-            CreateASDKDeploymentISO.ps1 -ASDKPassword <Password>
+            CreateASDKDeployment.ps1 -ASDKPassword <Password>
         
         NetworkVHDLocation - specifies folder where to find the cloudbuilder.vhd 
             Must be specified together with
                 ShareUserName - username to access the network share
                 SharePassword - password to access the network drive
             
-                    CreateASDKDeploymentISO.ps1 -NetworkVHDLocation <UNCPath> -ShareUsername <user> -SharePassword <password>
+                    CreateASDKDeployment.ps1 -NetworkVHDLocation <UNCPath> -ShareUsername <user> -SharePassword <password>
 
     !Warning! If a password is specified, it will be stored in clear text inside the ISO image (x:\windows\system32\startnet.cmd)
     
@@ -43,22 +43,29 @@ Examples:
         - deploys cloudbuilder.vhdx and prepare
         - automatically deploys AzureStackDevelopmentKit
 
-        CreateASDKDeploymentISO.ps1 -TargetDirectory c:\test2
+        CreateASDKDeployment.ps1 -TargetDirectory c:\test2
         
     Create a bootable ISO that automates the deployment using the predefined password:    
-        CreateASDKDeploymentISO.ps1 -ASDKPassword MYPAssword -TargetDirectory c:\test2 
+        CreateASDKDeployment.ps1 -ASDKPassword MYPAssword -TargetDirectory c:\test2 
 
     Create a bootable ISO that automates the deployment using network source
-        CreateASDKDeploymentISO.ps1 -ASDKPassword MYPAssword -TargetDirectory c:\test2 -ShareUsername AzureStack -SharePassword
+        CreateASDKDeployment.ps1 -ASDKPassword MYPAssword -TargetDirectory c:\test2 -ShareUsername AzureStack -SharePassword
                 AzureStack -NetworkVHDLocation \\172.16.5.9\azurestack\DeployAzureStack\MASImage
          
     Create a bootable ISO that uses a custom GitHub repository or branch     
-         CreateASDKDeploymentISO.ps1 -CustomGitBranch development -CustomGitLocation RZomerman/ASDK
+         CreateASDKDeployment.ps1 -CustomGitBranch development -CustomGitLocation RZomerman/ASDK
         
 
         Important:
             Git repository and GitBranch are CaSeSensiTive 
-
+    
+    Create a bootable USB instead of an ISO
+        .\CreateASDKDeploymentIso.ps1 -TargetDirectory c:\asdkiso -ASDKPassword <ComplexPassword> -ShareUsername azurestack 
+         - SharePassword azurestack -NetworkVHDLocation "\\172.16.5.9\AzureStack\DeployAzureStack\MASImage" -usbdrive D: 
+        
+    Create a bootable USB (or removal media) from a previously built image    
+        .\CreateASDKDeploymentIso.ps1 -TargetDirectory c:\asdkiso -ASDKPassword <ComplexPassword> -ShareUsername azurestack                    -SharePassword azurestack -NetworkVHDLocation "\\172.16.5.9\AzureStack\DeployAzureStack\MASImage" -usbdrive D: -reuse $true
+    
 
 Start.ps1
 
