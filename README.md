@@ -64,7 +64,8 @@ Examples:
          - SharePassword azurestack -NetworkVHDLocation "\\172.16.5.9\AzureStack\DeployAzureStack\MASImage" -usbdrive D: 
         
     Create a bootable USB (or removal media) from a previously built image    
-        .\CreateASDKDeploymentIso.ps1 -TargetDirectory c:\asdkiso -ASDKPassword <ComplexPassword> -ShareUsername azurestack                    -SharePassword azurestack -NetworkVHDLocation "\\172.16.5.9\AzureStack\DeployAzureStack\MASImage" -usbdrive D: -reuse $true
+        .\CreateASDKDeploymentIso.ps1 -TargetDirectory c:\asdkiso -ASDKPassword <ComplexPassword> -ShareUsername azurestack 
+        -SharePassword azurestack -NetworkVHDLocation "\\172.16.5.9\AzureStack\DeployAzureStack\MASImage" -usbdrive D: -reuse $true
     
 
 Start.ps1
