@@ -167,10 +167,12 @@ function DiskConfiguration
 
     if ($isLegacyBoot) 
     {
-     Write-LogMessage -Message "Create new partitions for Legacy Boot."
-        (Get-Content $ClearDiskFilePath).replace('REPLACEME', $bootDiskNumber) | Set-Content x:\DiskPartClear.txt
-        Start-Process 'DiskPart' -ArgumentList "/s X:\DiskPartClear.txt" -WindowStyle Hidden -Wait
-        start-sleep -s 5
+        Write-LogMessage -Message "Create new partitions for Legacy Boot."
+        $BootDisk=Get-Disk $bootDiskNumber | Clear-Disk -RemoveData -RemoveOEM
+        $BootDisk=Get-Disk $bootDiskNumber
+        If ($Bootdisk.PartitionStyle -eq "GPT") {
+            Set-Disk $bootDiskNumber -PartitionStyle MBR
+        }
         $null = Initialize-Disk -Number $bootDiskNumber -PartitionStyle MBR -ErrorAction SilentlyContinue
         $partition = New-Partition -DiskNumber $bootDiskNumber -UseMaximumSize -AssignDriveLetter -IsActive
         $partition = Get-Partition -DiskNumber $bootDiskNumber | sort -Descending -Property Offset | select -First 1
@@ -179,10 +181,11 @@ function DiskConfiguration
         $OsDriveLetter=$partition.Driveletter + ':'
     }else{
         Write-LogMessage -Message "Create new partitions for EUFI."
-    #Preparing DiskPartClear.txt for correct disk
-        (Get-Content $ClearDiskFilePath).replace('REPLACEME', $bootDiskNumber) | Set-Content x:\DiskPartClear.txt
-        Start-Process 'DiskPart' -ArgumentList "/s X:\DiskPartClear.txt" -WindowStyle Hidden -Wait
-        start-sleep -s 5
+	$BootDisk=Get-Disk $bootDiskNumber | Clear-Disk -RemoveData -RemoveOEM
+        $BootDisk=Get-Disk $bootDiskNumber
+        If ($Bootdisk.PartitionStyle -eq "MBR") {
+            Set-Disk $bootDiskNumber -PartitionStyle GPT
+        }
         $null = Initialize-Disk -Number $bootDiskNumber -ErrorAction SilentlyContinue
         $espPartition = New-Partition -DiskNumber $bootDiskNumber -Size 200MB -GptType "{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}"  # ESP
         $msrPartition = New-Partition -DiskNumber $bootDiskNumber -Size 128MB -GptType "{e3c9e316-0b5c-4db8-817d-f92df00215ae}" # MSR
