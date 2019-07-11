@@ -167,11 +167,16 @@ function DiskConfiguration
 
     if ($isLegacyBoot) 
     {
-        Write-LogMessage -Message "Create new partitions for Legacy Boot."
+     Write-LogMessage -Message "Create new partitions for Legacy Boot."
+        (Get-Content $ClearDiskFilePath).replace('REPLACEME', $bootDiskNumber) | Set-Content x:\DiskPartClear.txt
+        Start-Process 'DiskPart' -ArgumentList "/s X:\DiskPartClear.txt" -WindowStyle Hidden -Wait
+        start-sleep -s 5
         $null = Initialize-Disk -Number $bootDiskNumber -PartitionStyle MBR -ErrorAction SilentlyContinue
         $partition = New-Partition -DiskNumber $bootDiskNumber -UseMaximumSize -AssignDriveLetter -IsActive
+        $partition = Get-Partition -DiskNumber $bootDiskNumber | sort -Descending -Property Offset | select -First 1
         $systemDrive = $partition.DriveLetter + ':'
         $osVolume = Format-Volume -Partition $partition -FileSystem NTFS -Confirm:$false
+        $OsDriveLetter=$partition.Driveletter + ':'
     }else{
         Write-LogMessage -Message "Create new partitions for EUFI."
     #Preparing DiskPartClear.txt for correct disk
